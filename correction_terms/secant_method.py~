@@ -1,0 +1,55 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+from functools import reduce
+from operator import and_
+
+def secant_method(f,x0,unit=None,yabstol=1e-8,xabstol=None,maxiter=25, verbose=False):
+    def cb(x):
+        if unit:
+            return f(x*unit)
+        else:
+            return f(x)
+
+    satisfication_functions = []
+
+    def satisfied():
+        res = [f() for f in satisfication_functions]
+        return reduce(and_,res)
+
+    def satisfied_yabstol():
+        return abs(y)<yabstol
+
+    def satisfied_xabstol():
+        return abs(dx)<xabstol
+
+    if yabstol: satisfication_functions.append(satisfied_yabstol)
+    if xabstol: satisfication_functions.append(satisfied_xabstol)
+
+    # First step in secant method
+    y0 = cb(x0)
+    dx = x0*1e-2 # arbitrary first step
+    x  = x0+dx
+    y  = cb(x)
+    i  = 1
+    dy = y-y0
+    if verbose:
+        print i,x,dx,y,dy
+    print "satisfied",satisfied()
+    while not satisfied() and i <= maxiter:
+        dx = -y*dx/dy
+        x0 = x
+        x += dx
+        y0 = y
+        y  = cb(x)
+        dy = y-y0
+        if verbose:
+            print i,x,dx,y,dy
+        i += 1
+        
+        
+    if i > maxiter:
+        raise ValueError
+    else:
+        return x
+

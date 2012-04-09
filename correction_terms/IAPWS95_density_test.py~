@@ -1,0 +1,35 @@
+import unittest
+import numpy as np
+from kinetic_funcs import *
+
+class Test_dCdt_ma(unittest.TestCase):
+    """
+    x1+x2 >x3, k1 = 3
+    x3+x3 >x4, k2 = 5
+    C = (2, 7, 11, 0)
+    """
+    def setUp(self):
+        self.RSM = np.matrix([[ -1, -1,  1, 0],
+                              [  0,  0, -2, 1]])
+        self.RSMt = self.RSM.transpose()
+        self.t = 0
+        self.C = np.array([2., 7., 11., 0.])
+        self.reactant_M = np.matrix([[1, 1, 0, 0],
+                                     [0, 0, 2, 0]])
+        self.k = np.array([3., 5.])
+
+    def runTest(self):
+        target_w = np.array([[ -3.0*2.0*7.0],
+                             [-3.0*2.0*7.0],
+                             [3.0*2.0*7.0 - 2 * 5.0 * 11.0 ** 2],
+                             [5.0 * 11 ** 2]])
+        print target_w
+        result_w = dCdt_ma(self.t, self.C, self.reactant_M, self.RSMt, self.k)
+        print result_w
+        self.assertTrue(np.all([result_w, target_w]),
+                        'returns the wrong result')
+
+
+
+if __name__ == '__main__':
+    unittest.main()
