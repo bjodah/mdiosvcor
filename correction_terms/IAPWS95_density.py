@@ -1,9 +1,5 @@
-# -*- coding: utf-8 -*-
-# <nbformat>2</nbformat>
-
-# <codecell>
-
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Code for calculating density 
 # as function pressure and temperature
@@ -15,29 +11,34 @@
 # To the extent possible under law, Bjoern Dahlgren has waived all
 # copyright and related or neighboring rights to this work.
 
+from __future__ import division
 from sympy import *
 from sympy.physics import units
-
-# <codecell>
+from root_finding import find_root
 
 # Variables
 P  = Symbol('P')   # Pressure (Intensive state variable)
 T  = Symbol('T')   # Temperature (Intensive state variable)
 rho= Symbol('rho') # Denisty (Intensive state variable)
 
-# <codecell>
 
-_n0 = [0,
+_n0 = [sympify(x) for x in \
+        [0,
        -8.3204464837497, 6.6832105275932, 3.00632,
         0.012436,        0.97315,         1.27950,
-        0.96956,         0.24873]
-_gamma0 = [0,
+        0.96956,         0.24873]]
+
+
+_gamma0 = [sympify(x) for x in \
+           [0,
            0,               0,               0,
            1.28728967,      3.53734222,      7.74073708,
-           9.24437796,     27.5075105]
+           9.24437796,     27.5075105]]
+
         
 # The raw data is copied from IAPWS95.py by Kiran Pashikanti 
-_n =  [0,
+_n =  [sympify(x) for x in \
+       [0,
           0.12533547935523e-1,  0.78957634722828e+1, -0.87803203303561e+1,
           0.31802509345418e+0, -0.26145533859358e+0, -0.78199751687981e-2,
           0.88089493102134e-2, -0.66856572307965e+0,  0.20433810950965e+0,
@@ -56,45 +57,59 @@ _n =  [0,
           0.22446277332006e-1, -0.62689710414685e-4, -0.55711118565645e-9,
          -0.19905718354408e+0,  0.31777497330738e+0, -0.11841182425981e+0,
          -0.31306260323435e+2,  0.31546140237781e+2, -0.25213154341695e+4,
-         -0.14874640856724e+0,  0.31806110878444e+0]
+         -0.14874640856724e+0,  0.31806110878444e+0]]
 
-_c =  [0,
+_c =  [sympify(x) for x in \
+       [0,
           0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
           1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2,
           2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-          2, 2, 2, 3, 3, 3, 3, 4, 6, 6, 6, 6]
-_d =  [0,
+          2, 2, 2, 3, 3, 3, 3, 4, 6, 6, 6, 6]]
+_d =  [sympify(x) for x in \
+       [0,
           1, 1, 1, 2,  2,  3,  4,  1,  1, 1, 2,  2,  3,  4,
           4, 5, 7, 9, 10, 11, 13, 15,  1, 2, 2,  2,  3,  4,
           4, 4, 5, 6,  6,  7,  9,  9,  9, 9, 9, 10, 10, 12,
-          3, 4, 4, 5, 14,  3,  6,  6,  6, 3, 3,  3]
-_t =  [0,
+          3, 4, 4, 5, 14,  3,  6,  6,  6, 3, 3,  3]]
+_t =  [sympify(x) for x in \
+       [0,
           -0.5, 0.875,  1.0,  0.5,  0.75, 0.375,  1.0,  4.0,  6.0, 12.0,  1.0,
            5.0, 4.0  ,  2.0, 13.0,  9.0 , 3.0  ,  4.0, 11.0,  4.0, 13.0,  1.0,
            7.0, 1.0  ,  9.0, 10.0, 10.0 , 3.0  ,  7.0, 10.0, 10.0,  6.0, 10.0,
           10.0, 1.0  ,  2.0,  3.0,  4.0 , 8.0  ,  6.0,  9.0,  8.0, 16.0, 22.0,
-          23.0,23.0  , 10.0, 50.0, 44.0, 46.0  , 50.0,  0.0,  1.0,  4.0]
+          23.0,23.0  , 10.0, 50.0, 44.0, 46.0  , 50.0,  0.0,  1.0,  4.0]]
 
 #offset constants, no point in creating giant nearly empty lists
-_alpha = {52:20.0,53:20.0,54:20.0}
-_beta  = {52:150.0,53:150.0,54:250.0,55:0.3,56:0.3}
-_gamma = {52:1.21,53:1.21,54:1.25}
-_epsilon = {52:1.0, 53:1.0 ,54:1.0 }
-_a     = {55:3.5 ,56:3.5}
-_b     = {55:0.85,56:0.95}
-_B     = {55:0.2,56:0.2}
-_C     = {55:28.0,56:32.0}
-_D     = {55:700.0,56:800.0}
-_A     = {55:0.32,56:0.32}
+_alpha = dict([(k,sympify(v)) for k,v in \
+               {52:20.0,53:20.0,54:20.0}.iteritems()])
+_beta  = dict([(k,sympify(v)) for k,v in \
+               {52:150.0,53:150.0,54:250.0,55:0.3,56:0.3}.iteritems()])
+
+_gamma = dict([(k,sympify(v)) for k,v in \
+               {52:1.21,53:1.21,54:1.25}.iteritems()])
+_epsilon = dict([(k,sympify(v)) for k,v in \
+               {52:1.0, 53:1.0 ,54:1.0 }.iteritems()])
+_a     = dict([(k,sympify(v)) for k,v in \
+               {55:3.5 ,56:3.5}.iteritems()])
+_b     = dict([(k,sympify(v)) for k,v in \
+               {55:0.85,56:0.95}.iteritems()])
+_B     = dict([(k,sympify(v)) for k,v in \
+               {55:0.2,56:0.2}.iteritems()])
+_C     = dict([(k,sympify(v)) for k,v in \
+               {55:28.0,56:32.0}.iteritems()])
+_D     = dict([(k,sympify(v)) for k,v in \
+               {55:700.0,56:800.0}.iteritems()])
+_A     = dict([(k,sympify(v)) for k,v in \
+               {55:0.32,56:0.32}.iteritems()])
 
 # <codecell>
 
-R = 461.51805 * units.joule / units.kelvin / units.kg
+R = sympify(461.51805) * units.joule / units.kelvin / units.kg
 
-rho_c = 322 * units.kg / units.meter**3
+rho_c = sympify(322.0) * units.kg / units.meter**3
 delta = rho/rho_c
 
-T_c = 647.096 * units.kelvin
+T_c = sympify(647.096) * units.kelvin
 tau = T_c/T
 
 # P_c = 22.064e6 * units.pascal # Critical pressure, not used explicitly
@@ -133,8 +148,8 @@ pressure_relation = P/(rho*R*T)-1-delta*dphi__rddelta
 
 
 def get_water_density(P_val=None, T_val=None):
-    if not P_val: P_val = 101.3e3 * units.pascal
-    if not T_val: T_val = 298.15  * units.kelvin
+    if not P_val: P_val = sympify(101.3e3) * units.pascal
+    if not T_val: T_val = sympify(298.15)  * units.kelvin
 
     # If P is without unit:
     try:
@@ -151,31 +166,26 @@ def get_water_density(P_val=None, T_val=None):
     def f0(x_rho):
         return pressure_relation.subs({P:P_val,T:T_val,rho:x_rho}).evalf()
 
-    rho0=1000.00
-    return secant_method(f0,rho0,unit=units.kg/units.meter**3,maxiter=25,verbose=False)
+    rho0=sympify(1000.00)
+    return find_root(f0,rho0,unit=units.kg/units.meter**3,maxiter=25,verbose=False)
 
 #print a.evalf()
 #solve(pressure_relation, rho)
 
-# <codecell>
+P0=sympify(101.3e3)*units.pascal
+Tdash=sympify(298.15)*units.kelvin
 
-get_water_density(101.3e3*units.pascal,298.15*units.kelvin)
+get_water_density(P0,Tdash)
 
-# <codecell>
+rho0 = sympify(1000.0)*units.kg/units.meter**3
+pressure_relation.subs({P:P0,T:Tdash,rho:rho0}).evalf()
 
-#get_density(101.3e3*units.pascal,298.15*units.kelvin)
-pressure_relation.subs({P:101.3e3*units.pascal,T:298.15*units.kelvin,rho:1000*units.kg/units.meter**3}).evalf()
-
-# <codecell>
-
-
-# <codecell>
 
 # For verification:
 # From table 6 in IAPWS-Rev.pdf
-abstol    = 1e-7
-T_ver     = 500 * units.kelvin
-rho_ver   = 838.025 * units.kg / units.meter**3
+abstol    = sympify(1e-7)
+T_ver     = sympify(500.0) * units.kelvin
+rho_ver   = sympify(838.025) * units.kg / units.meter**3
 subs_dict = {T:T_ver,rho:rho_ver}
 
 
@@ -205,17 +215,14 @@ d2phi__rddeltatau = diff(phi__r,rho,T) *T_c*rho_c
 # assert(abs(  dphi0ddeltatau.subs({T:T_val,rho:rho_val}) - phi0_deltatau_val     ) < abstol)
 # assert(abs(dphi__rddeltatau.subs({T:T_val,rho:rho_val}) - phi__r_deltatau_val   ) <       abstol)
 
-# <codecell>
 
 # print dphi0dtau.subs({T:T_val,rho:rho_val})
 # print phi0_tau_val
  
-# <codecell>
 
 # Test triple point
-T_t=273.16*units.kelvin
+T_t=sympify(273.16)*units.kelvin
 
-# <codecell>
 
 
 def staurated_liquid_density():
@@ -229,10 +236,10 @@ def staurated_liquid_density():
     b4 = -1.75493479
     b5 = -45.5170352
     b6 = -6.74694450e5
-    delta_prime = 1 + b1*v**(1/3) + \
-                          b2*v**(2/3) + \
-                          b3*v**(5/3) + \
-                          b4*v**(16/3) + \
-                          b5*v**(43/3) + \
-                          b6*v**(110/3)
+    delta_prime = 1 + b1*v**(1.0/3.0) + \
+                          b2*v**(2.0/3.0) + \
+                          b3*v**(5.0/3.0) + \
+                          b4*v**(16.0/3.0) + \
+                          b5*v**(43.0/3.0) + \
+                          b6*v**(110.0/3.0)
 

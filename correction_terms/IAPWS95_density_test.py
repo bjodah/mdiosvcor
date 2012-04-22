@@ -7,26 +7,28 @@ import numpy as np
 from sympy import *
 from IAPWS95_density import *
 
-phi0_ref_500 = {
-    'f'             : 0.204797733e1,
-    'dfddelta'      : 0.384236747,
-    'd2fddelta2'    :-0.147637878,
-    'dfdtau'        : 0.904611106e1,
-    'd2fdtau2'      :-0.193249185e1,
-    'd2fddeltadtau' : 0,
-    }
+phi0_ref_500 = dict([(k,sympify(v)) for k,v in \
+                     {
+                         'f'             : 0.204797733e1,
+                         'dfddelta'      : 0.384236747,
+                         'd2fddelta2'    :-0.147637878,
+                         'dfdtau'        : 0.904611106e1,
+                         'd2fdtau2'      :-0.193249185e1,
+                         'd2fddeltadtau' : 0,
+                         }.iteritems()])
 
-phi__r_ref_500 = {
-    'f'             :-0.342693206e1,
-    'dfddelta'      :-0.364366650,
-    'd2fddelta2'    : 0.856063701,
-    'dfdtau'        :-0.581403435e1,
-    'd2fdtau2'      :-0.223440737e1,
-    'd2fddeltadtau' :-0.112176915e1,
-}
+phi__r_ref_500 = dict([(k,sympify(v)) for k,v in \
+                       {
+                           'f'             :-0.342693206e1,
+                           'dfddelta'      :-0.364366650,
+                           'd2fddelta2'    : 0.856063701,
+                           'dfdtau'        :-0.581403435e1,
+                           'd2fdtau2'      :-0.223440737e1,
+                           'd2fddeltadtau' :-0.112176915e1,
+                           }.iteritems()])
 
-state_500_subs = {T:   500*units.kelvin,
-                  rho: 838.025 * units.kg / units.meter**3
+state_500_subs = {T:   sympify(500.0)   * units.kelvin,
+                  rho: sympify(838.025) * units.kg / units.meter**3
                   }
 
 derivative_order = ('f','dfddelta','d2fddelta2','dfdtau','d2fdtau2','d2fddeltadtau')
@@ -68,4 +70,7 @@ class Test_ref(unittest.TestCase):
                 calc_vals.append(expr.subs(subs))
             self.assertTrue(np.allclose(calc_vals,ref_vals))
 
+
+if __name__ == '__main__':
+    unittest.main()
 
