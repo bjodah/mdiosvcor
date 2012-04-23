@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Code for calculating density
-# as function pressure and temperature
-# according to IAPWS95 formulation.
+# Provides constants used in the IAPWS95 formulation.
 
 # Author: Björn Dahlgren
 # Implemented for use in research project in the IGC group at ETH
@@ -15,7 +13,6 @@ from __future__ import division
 from sympy import *
 from sympy.physics import units
 from root_finding import find_root
-from helpers import get_sympified
 
 # Variables
 P  = Symbol('P')   # Pressure (Intensive state variable)
@@ -23,23 +20,25 @@ T  = Symbol('T')   # Temperature (Intensive state variable)
 rho= Symbol('rho') # Denisty (Intensive state variable)
 
 
+# Constants used in the master equation
+
 _n0 = [sympify(x) for x in \
-        [0,
+        [0.0,
        -8.3204464837497, 6.6832105275932, 3.00632,
         0.012436,        0.97315,         1.27950,
         0.96956,         0.24873]]
 
 
 _gamma0 = [sympify(x) for x in \
-           [0,
-           0,               0,               0,
+           [0.0,
+           0.0,               0.0,               0.0,
            1.28728967,      3.53734222,      7.74073708,
            9.24437796,     27.5075105]]
 
 
 # The raw data is copied from IAPWS95.py by Kiran Pashikanti
 _n =  [sympify(x) for x in \
-       [0,
+       [0.0,
           0.12533547935523e-1,  0.78957634722828e+1, -0.87803203303561e+1,
           0.31802509345418e+0, -0.26145533859358e+0, -0.78199751687981e-2,
           0.88089493102134e-2, -0.66856572307965e+0,  0.20433810950965e+0,
