@@ -20,8 +20,8 @@ from helpers import get_sympified
 
 import IAPWS95_constants as const
 
-# Standard state, not given in article
-P0	  =	sympify(101.3e3)*units.pascal
+# Standard state,
+P0    =	sympify(101.325e3)*units.pascal
 Tdash =	sympify(298.15)*units.kelvin
 
 
@@ -30,60 +30,56 @@ P	= Symbol('P')   # Pressure (Intensive state variable)
 T	= Symbol('T')   # Temperature (Intensive state variable)
 rho	= Symbol('rho') # Denisty (Intensive state variable)
 
+# Reference constants from Section 6.1 p. 428 (p. 42 in PDF)
+T_c = sympify(647.096) * units.kelvin
+rho_c = sympify(322.0) * units.kg / units.meter**3
 R = sympify(461.51805) * units.joule / units.kelvin / units.kg
 
-rho_c = sympify(322.0) * units.kg / units.meter**3
-delta = rho/rho_c
-
-T_c = sympify(647.096) * units.kelvin
-tau = T_c/T
-
-# Other constants never used explicitly
-# =====================================
-# Critical pressure
-P_c = 22.064e6 * units.pascal
-
-# Triple point
-T_t			= sympify(273.16)*units.kelvin
-p_t			= sympify(611.655)*units.pascal
-rho_prime_t = 999.793*units.kg/units.meter**3
-rho_bis_t   = 0.00485458 * units.kg / units.meter**3
+# Reduced variables
+delta = Symbol('delta')
+rho = Symbol('rho')
+expl_delta = rho/rho_c # Below eq 6.4 on p. 429 (p. 43 in PDF)
+expl_tau   = T_c/T     # Below eq 6.4 on p. 429 (p. 43 in PDF)
 
 
-_n0		 = get_sympified(const._n0)
+_n0	 = get_sympified(const._n0)
 _gamma0	 = get_sympified(const._gamma0)
-_n		 = get_sympified(const._n)
-_c		 = get_sympified(const._c)
-_d		 = get_sympified(const._d)
-_t		 = get_sympified(const._t)
+_n	 = get_sympified(const._n)
+_c	 = get_sympified(const._c)
+_d	 = get_sympified(const._d)
+_t	 = get_sympified(const._t)
 _alpha	 = get_sympified(const._alpha)
 _beta	 = get_sympified(const._beta)
 _gamma	 = get_sympified(const._gamma)
 _epsilon = get_sympified(const._epsilon)
-_a		 = get_sympified(const._a)
-_b		 = get_sympified(const._b)
-_B		 = get_sympified(const._B)
-_C		 = get_sympified(const._C)
-_D		 = get_sympified(const._D)
-_A		 = get_sympified(const._A)
+_a	 = get_sympified(const._a)
+_b	 = get_sympified(const._b)
+_B	 = get_sympified(const._B)
+_C	 = get_sympified(const._C)
+_D	 = get_sympified(const._D)
+_A	 = get_sympified(const._A)
 
 
+# The IAPWS-95 formulation is a fundamental equation for
+# the specific Helmholtz free energy f. This equation is ex-
+# pressed in dimensionless form, phi = f/(RT), and is separated
+# into two parts, an ideal-gas part phi° and a residual part phi^r,
+# so that:
 
-
-
-# phi = f/RT = phi0 + pi__r
+# f(rho, T)/RT = phi = phi0 + pi__r     Eq 6.4 p. 429 (p. 43 in PDF)
 
 # Ideal gas part, phi0
-# Eq X, p. Y
+# Eq 6.5, p. 429 (p. 43 in PDF)
 phi0 = ln(delta)+_n0[1]+_n0[2]*tau+_n0[3]*ln(tau)
 for i in range(4,9):
     phi0 += _n0[i]*ln(1-exp(-_gamma0[i]*tau))
 
 Psi={}; Theta={}; Delta={}
 for i in range(55,57):
-    Psi[i]   = exp(-_C[i]*(delta-1)**2-_D[i]*(tau-1)**2)
-    Theta[i] = (1-tau)+_A[i]*((delta-1)**2)**(1/(2*_beta[i]))
-    Delta[i] = Theta[i]**2+_B[i]*((delta-1)**2)**_a[i]
+    # Below Eq. 6.6 on p. 429 (p. 43 in PDF)
+    Psi[i]   = exp(-_C[i]*(delta - 1)**2 - _D[i]*(tau - 1)**2)
+    Theta[i] = (1 - tau)+_A[i]*((delta - 1)**2)**(1/(2*_beta[i]))
+    Delta[i] = Theta[i]**2 + _B[i]*((delta - 1)**2)**_a[i]
 
 
 # Eq 6.6 p. 429
@@ -94,7 +90,7 @@ for i in range(1,8):
 for i in range(8,52):
     phi__r += _n[i]*delta**_d[i]*tau**_t[i]*exp(-delta**_c[i])
 for i in range(52,55):
-    phi__r += _n[i]*delta**_d[i]*tau**_t[i]*exp(-_alpha[i]*(delta-_epsilon[i])**2-_beta[i]*(tau-_gamma[i])**2)
+    phi__r += _n[i]*delta**_d[i]*tau**_t[i]*exp(-_alpha[i]*(delta - _epsilon[i])**2 - _beta[i]*(tau - _gamma[i])**2)
 for i in range(55,57):
     phi__r += _n[i]*Delta[i]**_b[i]*delta*Psi[i]
 
@@ -126,17 +122,25 @@ def get_water_density(P_val=None, T_val=None):
     rho0=sympify(1000.00) * units.kg/units.meter**3
     return find_root(f0,rho0,unit=units.kg/units.meter**3,maxiter=25,verbose=False)
 
-#print a.evalf()
-#solve(pressure_relation, rho)
-
-
-get_water_density(P0,Tdash)
-
-rho0 = sympify(1000.0)*units.kg/units.meter**3
-pressure_relation.subs({P:P0,T:Tdash,rho:rho0}).evalf()
 
 
 
+# Entities below are currently not used.
+# ==================================================================
+# ==================================================================
+
+
+
+# Other constants never used explicitly
+# =====================================
+# Critical pressure
+# P_c = 22.064e6 * units.pascal
+
+# Triple point,
+T_t	    = sympify(273.16)*units.kelvin    # Eq 2.1a p. 398
+p_t	    = sympify(611.657)*units.pascal   # Eq 2.1b p. 398
+rho_prime_t = sympify(999.793)*units.kg/units.meter**3
+rho_bis_t   = sympify(0.00485458) * units.kg / units.meter**3
 
 
 
@@ -145,7 +149,7 @@ def staurated_liquid_density():
     # Saturated liquid density
     rho__prime = T*dp_sigmadT/Beta # Eq 2.3 p 398
     v = (1-T/T_c)
-	b  =  [0,
+    b  =  [0,
            1.99274064,
            1.09965342,
           -0.510839303,
