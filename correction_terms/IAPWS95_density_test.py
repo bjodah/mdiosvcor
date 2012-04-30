@@ -11,7 +11,6 @@ from helpers import get_sympified
 
 # From Table 6.6 p. 436 (50 in PDF)
 
-
 phi0_ref_500 = {
                  'f'             : 0.204797733e1,
                  'dfddelta'      : 0.384236747,
@@ -30,8 +29,9 @@ phi__r_ref_500 = {
                  'd2fddeltadtau' :-0.112176915e1,
                  }
 
-state_500_subs = {T:   sympify(500.0)   * units.kelvin,
-                  rho: sympify(838.025) * units.kg / units.meter**3
+state_500_subs = {tau: T_c / (sympify(500.0) * units.kelvin),
+                  delta: sympify(838.025) * units.kg / units.meter**3\
+		         / rho_c
                   }
 
 phi0_ref_647 =  {
@@ -52,8 +52,9 @@ phi__r_ref_647 = {
                   'd2fddeltadtau' :-0.133214720e1,
                  }
 
-state_647_subs = {T:   sympify(647.0)   * units.kelvin,
-                  rho: sympify(358.0)   * units.kg / units.meter**3
+state_647_subs = {tau:   T_c / (sympify(647.0) * units.kelvin),
+                  delta: sympify(358.0) * units.kg / units.meter**3 \
+		         / rho_c
                   }
 
 global derivative_order
@@ -68,12 +69,12 @@ derivative_vars = {
     # Note: The reason why the derivation is not done
     #       explicitly with respect to tau/delta respectively
     #       is that sympy complains on rho_c/T_c having units
-    'f'             :((None,),  1),
-    'dfddelta'      :((rho,),  rho_c),
-    'd2fddelta2'    :((rho,2), rho_c**2),
-    'dfdtau'        :((T,),    -T**2/T_c),
-    'd2fdtau2'      :((T,2),   T**3/2/T_c),
-    'd2fddeltadtau' :((rho,T), rho_c*-T**2/T_c),
+    'f'             :None,
+    'dfddelta'      :(delta, 1),
+    'd2fddelta2'    :(delta, 2),
+    'dfdtau'        :(tau, 1),
+    'd2fdtau2'      :(tau, 2),
+    'd2fddeltadtau' :(delta, 1, tau, 1)
 }
 
 refs = [(state_500_subs, phi0,   phi0_ref_500),
@@ -87,26 +88,22 @@ class Test_ref(unittest.TestCase):
     """
     derivative_order = derivative_order
     derivative_vars  = derivative_vars
-    def runTest(self):
-        test_verification_data()
 
     def test_verification_data(self):
-	global derivative_order
-	global derivative_vars
-        for subs,func,ref in refs:
-            ref_vals = np.array([ref[key] for key in self.derivative_order])
-            calc_vals = []
-            for var in self.derivative_order:
-                wrt, factor = self.derivative_vars[var]
-		if wrt != (None,):
-		    expr = func.diff(*wrt)*factor
+	for subs_d,func,ref in refs:
+	    ref_vals = np.array([ref[key] for key in self.derivative_order])
+	    calc_vals = []
+	    for var in self.derivative_order:
+		wrt = self.derivative_vars[var]
+		if wrt != None:
+		    deriv = func.diff(*wrt)
 		else:
-		    expr = func*factor
-                calc_vals.append(expr.subs(subs))
+		    deriv = func
+		calc_vals.append(deriv.subs(subs_d))
 	    calc_vals = np.array([float(x) for x in calc_vals])
 	    print [calc_vals, ref_vals]
-            self.assertTrue(np.allclose(calc_vals,ref_vals),
-			    'Discrepancy in %s' % str(subs))
+	    self.assertTrue(np.allclose(calc_vals,ref_vals),
+			    'Discrepancy in %s' % str(subs_d))
 
 
 if __name__ == '__main__':

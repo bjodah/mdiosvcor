@@ -1,10 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Code for implementing common
+# root finding algorithms, implemented
+# with sympy.physics.units compability
+# in mind. (I long for the day sympy
+# interacts well with the PyPI package:
+# "quantities")
+
+# Author: Björn Dahlgren
+# Implemented for use in research project in the IGC group at ETH
+
+# To the extent possible under law, Bjoern Dahlgren has waived all
+# copyright and related or neighboring rights to this work.
+
+
 from functools import reduce
 from operator import and_
 
 def secant_generator(f, x0, dx0):
+    """
+    Recursion formula for the "Secant method"
+    """
     x1, x2 = x0+dx0, x0
     f1, f2 = f(x1), f(x2)
     yield x2, f2
@@ -26,6 +43,10 @@ def newton_generator(f, x0, dfdx):
         x0 -= f0/dfdx0
 
 def fixed_point_iteration_generator(G, x0, dGdx=None):
+    """
+    Usually not the best option but if a fixed point iteration
+    is needed this generator provides the recursion formula.
+    """
     conv_limit = 1 - 1e-6
     if dGdx:
         dGdx0 = dGdx(x0)
@@ -47,23 +68,46 @@ def fixed_point_iteration_generator(G, x0, dGdx=None):
         G_old = G0
         dx_old = dx
 
-def print_info(i,x,dx,y,dy,dx_old,
-                 fmtstr="{0: >3}{1: >20}{2: >20}"+\
-                        "{3: >20}{4: >20}{5: >20}"):
-    if i==0:
-        print fmtstr.format("i","x","dx","y","dy","dxi/dx(i-1)**2")
-        print fmtstr.format(i,x,"-",y,"-","-")
-    elif i ==1:
-        print fmtstr.format(i,x,dx,y,dy,'-')
-    else:
-        print fmtstr.format(i,x,dx,y,dy,dx/dx_old**2)
+def print_info(i,x,dx,y,dy,dx_old, xunit=1.0, yunit=1.0,
+                 fmtstr="{0: >3}{1: >25}{2: >25}"+\
+                        "{3: >25}{4: >25}{5: >25}"):
+    """
+    For studying the convergence it is helpful to
+    see how the values changes between steps.
+    Call find_root with "verbose=True" in order
+    to enable printing of intermediate values.
+    """
 
-def find_root(f,
+    if i==0:
+	if xunit != 1.0:
+	    sx	      = "x [{0}]".format(xunit)
+	    sdx	      = "dx [{0}]".format(xunit)
+	    sdxidxim1 = "dxi/dx(i-1)**2 [{0}]".format(1/xunit)
+	else:
+	    sx	      = "x"
+	    sdx	      = "dx"
+	    sdxidxim1 = "dxi/dx(i-1)**2"
+	if yunit != 1.0:
+	    sy	      = "y [{0}]".format(yunit)
+	    sdy	      = "dy [{0}]".format(yunit)
+	else:
+	    sy	      = 'y'
+	    sdy	      = 'dy'
+
+        print fmtstr.format("i",sx,sdx,sy,sdy,sdxidxim1)
+        print fmtstr.format(i,x/xunit,"-",y/yunit,"-","-")
+    elif i ==1:
+        print fmtstr.format(i,x/xunit,dx/xunit,y/yunit,dy/yunit,'-')
+    else:
+        print fmtstr.format(i,x/xunit,dx/xunit,y/yunit,dy/yunit,dx/dx_old**2*xunit)
+
+def find_root(func,
               x0,
               preferred_method=None,
               dfdx=None,
               dx0=None,
-              unit=None,
+              xunit=1.0,
+	      yunit=1.0,
               abstol=None,
               yabstol=None,
               xabstol=None,
@@ -77,52 +121,45 @@ def find_root(f,
 
     method choice is stored as a tuple:
     (callback, args)
+
+    TODO: let unit be automatically taken from x0 and func
     """
 
     if preferred_method == "newton" or \
         (not preferred_method and dfdx):
         if verbose: print "Using Newton's method."
-        method = (newton_generator, (f, x0, dfdx))
+        method = (newton_generator, (func, x0, dfdx))
     elif preferred_method == "secant" or \
         (not preferred_method and not dfdx):
         if verbose: print "Using the secant method."
         if not dx0:
             # If no dx0 specified take an arbitrary step forward
-            dx0 = x0*1e-2 + 1e-6
-            if verbose: print "Assuming dx0 = {0:12.5g}".format(dx0)
-        method = (secant_generator, (f, x0, dx0))
+            dx0 = x0*1e-2 + 1e-6*xunit
+            if verbose: print "Assuming dx0 = {0}".format(dx0)
+        method = (secant_generator, (func, x0, dx0))
     else:
         NotImplemented
 
-    # Handle units if x has got a unit
-    if unit:
-        try:
-            float(x0/unit)
-        except:
-            ret_unit = None
-        else:
-            x0 = float(x0/unit)
-            ret_unit = unit
-        
+
     # Setup tolerance requierments
     satisfication_functions = []
 
     def satisfied():
-        satisfication = [f() for f in satisfication_functions]
+        satisfication = [sf() for sf in satisfication_functions]
         return reduce(and_,satisfication)
 
     def satisfied_yabstol():
-        return abs(y)<yabstol
+        return abs(y/yunit)<yabstol
 
     def satisfied_xabstol():
-        return abs(dx)<xabstol
+        return abs(dx/xunit)<xabstol
 
     if abstol:
         if xabstol or yabstol:
             raise ValueError("Both abstol and xabstol and/or yabstol specified")
         yabstol = abstol
         xabstol = abstol
-    
+
     if not yabstol and not xabstol:
         yabstol = 1e-10
         if verbose: print "Since no tolerances were specified," + \
@@ -136,23 +173,20 @@ def find_root(f,
         interm_res = []
 
     def append_res(x,y):
-        if unit:
-            interm_res.append((x*unit,f(x*unit)))
-        else:
-            interm_res.append((x,y))
-        
+	iterm_res.append((x,y))
+
 
     # Initialize the generator of chosen method
     method_gen = method[0](*method[1])
     i = 0
     x0, y0 = method_gen.next()
     dx, dx_old, dy = None, None, None
-    if verbose: print_info(i,x0,dx,y0,dy,dx_old)
+    if verbose: print_info(i,x0,dx,y0,dy,dx_old,xunit,yunit)
     for x,y in method_gen:
         i     += 1
         dx_old = dx
         dx, dy = x - x0, y - y0
-        if verbose: print_info(i,x,dx,y,dy,dx_old)
+        if verbose: print_info(i,x,dx,y,dy,dx_old,xunit,yunit)
         if return_intermediate_results: append_res(x,y)
         if satisfied(): break
         if i == maxiter:
@@ -162,5 +196,5 @@ def find_root(f,
     if return_intermediate_results:
         return interm_res
     else:
-        return x,y
-    
+	return x,y
+

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-from IAPWS_density import *
+from manuscript_equations import get_Delta_G_LS
 
-# print a.evalf()
-# solve(pressure_relation, rho)
+P_val = 5000   * units.bar
+T_val = 310.65 * units.kelvin
+N_W   = 1024          # Number of water molecules in MD simulation
+ion   = 'sod'         # What ion is used (sod: Na^+ / cls: Cl^-)
 
-
-# get_water_density(P0,Tdash)
-
-rho0 = sympify(1000.0)*units.kg/units.meter**3
-pressure_relation.subs({P:P0,T:Tdash,rho:rho0}).evalf()
+print get_Delta_G_LS(P_val, T_val, N_W, ion, 'all')

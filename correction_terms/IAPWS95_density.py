@@ -4,7 +4,11 @@
 # Code for calculating density
 # as function pressure and temperature
 # according to IAPWS95 formulation.
-# The code is entirely based
+# The code is entirely based on the publication:
+#    Wagner, W., and A. Pruß. “The IAPWS Formulation 1995 for the
+#    Thermodynamic Properties of Ordinary Water Substance for
+#    General and Scientific Use.” Journal of Physical and Chemical
+#    Reference Data 31, no. 2 (June 7, 2002): 387–535.
 
 # Author: Björn Dahlgren
 # Implemented for use in research project in the IGC group at ETH
@@ -36,10 +40,16 @@ rho_c = sympify(322.0) * units.kg / units.meter**3
 R = sympify(461.51805) * units.joule / units.kelvin / units.kg
 
 # Reduced variables
+
 delta = Symbol('delta')
-rho = Symbol('rho')
+tau   = Symbol('tau')
+
 expl_delta = rho/rho_c # Below eq 6.4 on p. 429 (p. 43 in PDF)
 expl_tau   = T_c/T     # Below eq 6.4 on p. 429 (p. 43 in PDF)
+expl_subs  = {delta: expl_delta, tau: expl_tau}
+
+func_delta = symbols('delta', cls = Function)
+func_tau   = symbols('tau', cls = Function)
 
 
 _n0	 = get_sympified(const._n0)
@@ -94,38 +104,51 @@ for i in range(52,55):
 for i in range(55,57):
     phi__r += _n[i]*Delta[i]**_b[i]*delta*Psi[i]
 
-dphi__rdrho = diff(phi__r,rho)
-dphi__rddelta = rho_c * dphi__rdrho
+dphi__rddelta = diff(phi__r, delta)
 
 # Pressure relation, Table 6.3, p. 431 (p. 45 in PDF)
 pressure_relation = P/(rho*R*T)-1-delta*dphi__rddelta
+expl_pressure_relation = pressure_relation.subs(expl_subs)
 
-def get_water_density(P_val=None, T_val=None):
+
+# This work only uses the density of water, therefore a helper
+# function is definied for accessing density at a given pressure
+# and termperature
+def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9):
     if not P_val: P_val = sympify(101.3e3) * units.pascal
     if not T_val: T_val = sympify(298.15)  * units.kelvin
 
-    # If P is without unit:
+    # If P is without unit, assume Pascal:
     try:
         float(P_val/units.pascal)
     except:
         P_val *= units.pascal
 
-    # If T is without unit
+    # If T is without unit, assume Kelvin:
     try:
         float(T_val/units.kelvin)
     except:
         T_val *= units.kelvin
 
     def f0(x_rho):
-        return pressure_relation.subs({P:P_val,T:T_val,rho:x_rho}).evalf()
+        return expl_pressure_relation.subs({P:P_val,
+					    T:T_val,
+					    rho:x_rho}).evalf()
 
     rho0=sympify(1000.00) * units.kg/units.meter**3
-    return find_root(f0,rho0,unit=units.kg/units.meter**3,maxiter=25,verbose=False)
+    return find_root(f0,
+		     rho0,
+		     dx0=-1.0 * units.kg/units.meter**3,
+		     xunit=units.kg/units.meter**3,
+		     maxiter=25,
+		     xabstol=abstol,
+		     verbose=verbose)
 
 
 
 
-# Entities below are currently not used.
+# Entities below are currently not used. But are kept for possible
+# future reuse of the code and constants
 # ==================================================================
 # ==================================================================
 

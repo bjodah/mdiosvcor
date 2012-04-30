@@ -1,14 +1,10 @@
-# -*- coding: utf-8 -*-
-# <nbformat>2</nbformat>
-
-# <codecell>
-
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import sympy.core
 from sympy import *
 from sympy.physics import units
 
-# <codecell>
+from manuscript_equations import P0, Tdash
 
 # Permitivity of water according Bradley and Pitzer
 
@@ -30,49 +26,21 @@ C  = U4 + U5/(U6+T)
 eps1000 = U1*exp(U2*T+U3*T**2)
 eps = eps1000 + C*ln((B+P)/(B+1000.0*units.bar))
 
-eps_prime = eps * 66.6/78.4
-
-# <codecell>
-
-def get_eps(P_val,T_val):
-    # If P is without unit:
+def get_eps(P_val,T_val, expr=eps):
+    # If P is without unit, assume Pascal:
     try:
         float(P_val/units.pascal)
     except:
         unit = units.pascal
         print 'Warning: assumed P_val was in unit:' + str(unit)
         P_val *= unit
-    
-    # If T is without unit
+
+    # If T is without unit, assume Kelvin:
     try:
         float(T_val/units.kelvin)
     except:
         unit = units.kelvin
         print 'Warning: assumed T_val was in unit:' + str(unit)
         T_val *= unit
-        
-    return float(eps.subs({P:P_val,T:T_val}))
 
-def get_eps_prime(P_val,T_val):
-    # If P is without unit:
-    try:
-        float(P_val/units.pascal)
-    except:
-        unit = units.pascal
-        print 'Warning: assumed P_val was in unit:' + str(unit)
-        P_val *= unit
-    
-    # If T is without unit
-    try:
-        float(T_val/units.kelvin)
-    except:
-        unit = units.kelvin
-        print 'Warning: assumed T_val was in unit:' + str(unit)
-        T_val *= unit
-    
-    return float(eps_prime.subs({'P':P_val,'T':T_val}))
-
-# <codecell>
-
-get_eps(101.3e3,298.15)
-
+    return float(expr.subs({P:P_val,T:T_val}))
