@@ -42,7 +42,7 @@ from IAPWS95_density import get_water_density
 
 # Global variables (only LS scheme implemented)
 COR_TYPES = ('B','C1','C2','D')
-
+Y_TYPES   = ('G', 'S', 'CP', 'V', 'KT', 'AP')
 # Ions (only sodium and chloride ions implemented)
 IONS = ('sod','cls')
 
@@ -126,16 +126,24 @@ Delta_G_LS = {'B':  (8*pi*eps0)*N_A*q_I**2*(1-1/eps_prime)/L*(alpha_LS+4*pi/3*(R
 	      'C2': -N_A*q_I[ion]*4*pi*R_I**3/3/L**3*(chi_prime+chi_minus_prime/R_I)}
 	      'D':  1/8/pi/eps0*N_A*q_I**2*(1/eps-1/eps_prime)/R_I}
 
-def get_Delta_G_LS(P_val,T_val,N_W_val,ion,cor_type="all"):
+Y_diff = {'G':None,
+          'S':(T,1),
+          'CP':(T,2),
+          'V':(P,1),
+          'KT':(P,2),
+          'AP':(P,1,T,1)
+          }
+
+def get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,cor_type="all"):
     """
     Function which returns a correction term of type
     cor_type or a dictionary of all correction terms
     (when cor_type="all") evaluated at:
 
-      pressure    = P_val
-      temperature = T_val
+      pressure                  = P_val
+      temperature               = T_val
       number of water molecules = N_W_cval
-      ion type    = ion
+      ion type                  = ion
 
     Units are provided by multiplying values with a unit from
         sympy.physics.units
@@ -144,15 +152,18 @@ def get_Delta_G_LS(P_val,T_val,N_W_val,ion,cor_type="all"):
     """
     assert(cor_type in COR_TYPES or cor_type=="all")
     assert(ion in ions)
+    assert(Y in Y_TYPES)
+
     if cor_type == "all":
 	result = {}
 	for key in Delta_G_LS.keys():
-	    result[key] = get_Delta_G_LS(P_val,T_val,N_W_val,ion,cor_type=key)
+	    result[key] = get_Delta_Y_cor_LS(P_val,T_val,N_W_val,ion,cor_type=key)
 	return result
     else:
-	return Delta_G_LS[cor_type].subs({P: P_val,
-					  T: T_val,
-					  N_W: N_W_val,
-					  q_I: q_I_val[ion],
-					  R_I: R_I_val[ion],
-					  })
+        delta_Y_expr = diff(Delta_G_LS[cor_type], *Y_diff[Y])
+	return delta_Y_expr.subs({P: P_val,
+                                  T: T_val,
+                                  N_W: N_W_val,
+                                  q_I: q_I_val[ion],
+                                  R_I: R_I_val[ion],
+                                  })
