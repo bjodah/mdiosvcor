@@ -32,17 +32,19 @@
 from __future__ import division # 1/3 returns 0.333333 ... instead of 0
 
 from sympy import *
-from sympy import mpmath
+#from sympy import mpmath
 from sympy.physics import units
 # Sympy does not support PyPI package "Quantities"
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 from water_permittivity import eps
-from IAPWS95_density import get_water_density
+from IAPWS95_density import expl_pressure_relation, get_water_density
+from manuscript_constants import P0, Tdash, eps0, alpha_LS, M_W, N_A     
+
 
 # Global variables (only LS scheme implemented)
 COR_TYPES = ('B','C1','C2','D')
-Y_TYPES   = ('G', 'S', 'CP', 'V', 'KT', 'AP')
+Y_TYPES   = ('G', 'H', 'S', 'CP', 'V', 'KT', 'AP')
 # Ions (only sodium and chloride ions implemented)
 IONS = ('sod','cls')
 
@@ -51,14 +53,6 @@ P  = Symbol('P') # Pressure (Intensive state variable)
 T  = Symbol('T') # Temperature (Intensive state variable)
 
 
-# Physical constants
-P0       = 101.3e3 * units.pascal
-Tdash    = 298.15  * units.kelvin
-#eps0     = pq.constants.vacuum_permittivity
-eps0     = 8.854187817e-12 units.farad / units.meter
-alpha_LS = -2.837297
-M_W      = (1.00794*2+15.9994)* units.gram / units.mole
-N_A      = 6.02214179e+23 / units.mole
 
 # Taylor expansion of P and T dependent function to second order
 f0,dfdP,dfdT,d2fdP2,d2fdPdT,d2fdT2 = \
@@ -71,7 +65,9 @@ TayParams = namedtuple('TayParams', ['f0', 'dfdP', 'dfdT', 'd2fdP2', 'd2fdPdT', 
 
 # From Table 3 p. 43 in submitted manuscript
 
-eps_prime = eps * 66.6/get_eps(P0,Tdash)
+rho_S_prime = get_water_density
+
+eps_prime = eps * 66.6/get_water_eps(P0,Tdash)
 
 R_I_sod_params = TayParams(1.68e-10 * units.meter,
                            0        * units.meter / units.bar,
@@ -121,18 +117,22 @@ q_I, R_I = symbols('q_I, R_I')
 L=(N_W*M_W/N_A/rho_prime(P,T)+4*pi/3*R_I[ion](P,T)**3)**(1/3)
 
 # Correction terms appropriate for Lattice summation
-Delta_G_LS = {'B':  (8*pi*eps0)*N_A*q_I**2*(1-1/eps_prime)/L*(alpha_LS+4*pi/3*(R_I/L)**2-16*pi**2/45*(R_I/L)**5)}
-	      'C1': -N_A/(6*eps0)*N_W*gamma_prime*q_I/L**3}
-	      'C2': -N_A*q_I[ion]*4*pi*R_I**3/3/L**3*(chi_prime+chi_minus_prime/R_I)}
+Delta_G_LS = {'B':  (8*pi*eps0)*N_A*q_I**2*(1-1/eps_prime)/L*(alpha_LS+4*pi/3*(R_I/L)**2-16*pi**2/45*(R_I/L)**5),
+	      'C1': -N_A/(6*eps0)*N_W*gamma_prime*q_I/L**3,
+	      'C2': -N_A*q_I[ion]*4*pi*R_I**3/3/L**3*(chi_prime+chi_minus_prime/R_I),
 	      'D':  1/8/pi/eps0*N_A*q_I**2*(1/eps-1/eps_prime)/R_I}
 
-Y_diff = {'G':None,
-          'S':(T,1),
-          'CP':(T,2),
-          'V':(P,1),
-          'KT':(P,2),
-          'AP':(P,1,T,1)
-          }
+# Delta_Y_LS is a dict of dicts:
+Delta_Y_LS = DefaultDict(dict)
+Delta_Y_LS = {'G': Delta_G_LS}
+
+for cor_type, cor_eq in Delta_G_LS.iteritems():
+    Delta_Y_LS['H'][cor_type]  = 1 - T*diff(cor_eq,T)
+    Delta_Y_LS['S'][cor_type]  = -diff(cor_eq,T)
+    Delta_Y_LS['CP'][cor_type] = -T*diff(cor_eq,T,2)
+    Delta_Y_LS['V'][cor_type]  = diff(cor_eq,P)
+    Delta_Y_LS['KT'][cor_type] = -diff(cor_eq,P,2)
+    Delta_Y_LS['AP'][cor_type] = diff(cor_eq,P,T)
 
 def get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,cor_type="all"):
     """
@@ -156,14 +156,13 @@ def get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,cor_type="all"):
 
     if cor_type == "all":
 	result = {}
-	for key in Delta_G_LS.keys():
-	    result[key] = get_Delta_Y_cor_LS(P_val,T_val,N_W_val,ion,cor_type=key)
+	for key in Delta_Y_LS[Y].keys():
+	    result[key] = get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type=key)
 	return result
     else:
-        delta_Y_expr = diff(Delta_G_LS[cor_type], *Y_diff[Y])
-	return delta_Y_expr.subs({P: P_val,
-                                  T: T_val,
-                                  N_W: N_W_val,
-                                  q_I: q_I_val[ion],
-                                  R_I: R_I_val[ion],
-                                  })
+	return Delta_Y_LS[Y][cor_type].subs({P: P_val,
+                                             T: T_val,
+                                             N_W: N_W_val,
+                                             q_I: q_I_val[ion],
+                                             R_I: R_I_val[ion],
+                                             })

@@ -114,7 +114,12 @@ expl_pressure_relation = pressure_relation.subs(expl_subs)
 # This work only uses the density of water, therefore a helper
 # function is definied for accessing density at a given pressure
 # and termperature
-def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9):
+def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9, derivative = None):
+    """
+    If a derivative is sought it must be specified as e.g:
+    derivative = [(T,1),(P,1)]
+    derivative = [(T,2)]
+    """
     if not P_val: P_val = sympify(101.3e3) * units.pascal
     if not T_val: T_val = sympify(298.15)  * units.kelvin
 
@@ -136,14 +141,26 @@ def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9):
 					    rho:x_rho}).evalf()
 
     rho0=sympify(1000.00) * units.kg/units.meter**3
-    return find_root(f0,
-		     rho0,
-		     dx0=-1.0 * units.kg/units.meter**3,
-		     xunit=units.kg/units.meter**3,
-		     maxiter=25,
-		     xabstol=abstol,
-		     verbose=verbose)
 
+    current_rho = find_root(f0,
+                         rho0,
+                         dx0=-1.0 * units.kg/units.meter**3,
+                         xunit=units.kg/units.meter**3,
+                         maxiter=25,
+                         xabstol=abstol,
+                         verbose=verbose)
+    if derivative == None:
+        return current_rho
+    else:
+        def fder(x):
+            static_subs = {P:P_val,
+                           T:T_val,
+                           rho:current_rho
+                           }
+            var, order = derivative.pop()
+            guess = (f(x+h)-f(x))/h
+            return expr.subs().evalf())
+        return find_root(
 
 
 

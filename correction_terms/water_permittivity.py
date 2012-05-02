@@ -4,7 +4,7 @@ import sympy.core
 from sympy import *
 from sympy.physics import units
 
-from manuscript_equations import P0, Tdash
+from manuscript_constants import P0, Tdash
 
 # Permitivity of water according Bradley and Pitzer
 
@@ -26,7 +26,7 @@ C  = U4 + U5/(U6+T)
 eps1000 = U1*exp(U2*T+U3*T**2)
 eps = eps1000 + C*ln((B+P)/(B+1000.0*units.bar))
 
-def get_eps(P_val,T_val, expr=eps):
+def get_water_eps(P_val,T_val, expr=eps):
     # If P is without unit, assume Pascal:
     try:
         float(P_val/units.pascal)
