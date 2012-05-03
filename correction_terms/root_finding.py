@@ -18,6 +18,8 @@
 from functools import reduce
 from operator import and_
 
+
+
 def secant_generator(f, x0, dx0):
     """
     Recursion formula for the "Secant method"
@@ -197,4 +199,76 @@ def find_root(func,
         return interm_res
     else:
 	return x,y
+
+def solve_relation_num(rel,
+		       subsd,
+		       varied_subs,
+		       initial_guess,
+		       **kwargs
+		       ):
+    """
+    Solves non-linear (sympy) equation numerically
+    """
+
+    def f0(x):
+	subsd.update({varied_subs: x})
+	return rel.subs(subsd)
+
+    return find_root(f0, initial_guess, **kwargs)
+
+
+def test_solve_realtion_num():
+    f = symbols('f',cls=Function)(x,y)
+    relation = ln(x*y+f)-f
+    x,y = solve_relation_num(relation, subsd={x:2,y:1},varied_subs=f,initial_guess=1.0,verbose=True,yabstol=1e-9)
+    assert abs(x-1.14619322062) < 1e-8
+
+
+def solve_relation_for_derivatives(rel,
+				   subsd,
+				   func,  # Function which to solve for (incl. derivs)
+				   initial_guess_func_val,
+				   diff_wrt={}
+				   ):
+    """
+    E.g. assume we are trying to find the value of:
+     f, dfdx, d2fdx2, dfdy, d2fdy2 for the relation:
+
+     f(x,y) = ln(x*y+f(x,y))
+
+     f = symbols('f', cls=Function)(x,y)     
+     rel = ln(x*y+f) - f   (x*y >= 1)
+
+     variables = (x,y)
+
+    """
+
+    from combo import get_dict_combinations_for_diff
+    from operator import add
+    from functools import reduce
+    from sympy import Derivative
+
+    for wrt in diff_wrt:
+        assert wrt in func.args
+
+    drel, deriv, deriv_val = {}, {}, {}
+    
+    for diff_step in get_dict_combinations_for_diff(diff_wrt):
+        signature = tuple(diff_step.items())
+        drel[signature] = rel.diff(*reduce(add,signature))
+        deriv[signature] = Derivative(func, *reduce(add,signature))
+        func0 = 
+        h = 
+        initial_guess = (rel.subs(subsd+{func: func0+h})-rel.subs(subsd+{func: func0}))/h
+        deriv_val[signature] = solve_relation_num(drel[signature],
+                                                  subsd,
+                                                  deriv[signature],
+                                                  initial_guess,
+                                                  **kwargs
+                                                  )
+        subsd.update({deriv[signature]: deriv_val[signature]})
+
+    return deriv_val[signature]
+
+
 

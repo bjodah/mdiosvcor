@@ -19,7 +19,7 @@
 from __future__ import division
 from sympy import *
 from sympy.physics import units
-from root_finding import find_root
+from root_finding import find_root, solve_relation_num, solve_relation_for_derivatives
 from helpers import get_sympified
 
 import IAPWS95_constants as const
@@ -109,7 +109,7 @@ for i in range(55,57):
 dphi__rddelta = diff(phi__r, delta)
 
 # Pressure relation, Table 6.3, p. 431 (p. 45 in PDF)
-pressure_relation = P/(rho*R*T)-1-delta*dphi__rddelta
+pressure_relation      = P/(rho*R*T) - 1 - delta*dphi__rddelta
 expl_pressure_relation = pressure_relation.subs(expl_subs)
 
 
@@ -117,78 +117,7 @@ expl_pressure_relation = pressure_relation.subs(expl_subs)
 # function is definied for accessing density at a given pressure
 # and termperature
 
-def solve_relation_num(rel,
-		       subsd,
-		       varied_subs,
-		       initial_guess,
-		       **kwargs
-		       ):
-    """
-    Solves non-linear equation numerically
-    """
 
-    def f0(x):
-	subsd.update({varied_subs: x})
-	return rel.subs(subsd)
-
-    return find_root(f0, initial_guess, **kwargs)
-
-def solve_relation_for_derivatives(rel,
-				   subsd,
-				   func,  # Function which to solve for (incl. derivs)
-				   initial_guess_func_val,
-				   vals={},
-				   diff_wrt={}
-				   ):
-    """
-
-    E.g. assume we are trying to find the value of:
-     f, dfdx, d2fdx2, dfdy, d2fdy2 for the relation:
-
-     f(x,y) = ln(x*y+f(x,y))
-
-     relation = ln(x*y+f) - f   (x*y >= 1)
-     func = symbols('f', cls=Function)(x,y)
-     variables = (x,y)
-
-    relation = ln(x+y)*f(x,y)
-    Function = f
-
-    """
-
-    variables = func.args
-    assert vals.keys() == variables
-
-    queue =
-    for diffvar, order in diff_wrt.iteritems():
-	for i in range(1, order):
-
-
-    derivs
-
-
-    vals = {}
-    while diff_wrt:
-	vals[tuple(has_diff_wrt)] = get_water_density_derivative(relation,
-								has_diff_wrt,
-								cur_vals=vals,
-								P_val=P_val,
-								T_val=T_val,
-								**kwargs)
-	# var, order = goal_diff_wrt.pop()
-	# for i in range(1,order):
-
-	# relation = diff(relation, var, order)
-	# has_diff_wrt.append((var,order))
-	# cur_rho = get_water_density_derivative(relation,)
-	# var, order = diff_wrt.pop()
-	# guess = (f(x+h)-f(x))/h
-	# solve_relation_num(expl_pressure_relation,
-	# 			     {P: P_val, T: T_val},
-	# 			     rho, rho0,
-	# 			     **find_root_kwargs)
-
-    return get_water_density(P_val=None, T_val=None, **kwargs)
 
 def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9):
     if not P_val: P_val = sympify(101.3e3) * units.pascal
