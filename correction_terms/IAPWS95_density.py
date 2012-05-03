@@ -32,7 +32,9 @@ Tdash =	sympify(298.15)*units.kelvin
 # Variables
 P	= Symbol('P')   # Pressure (Intensive state variable)
 T	= Symbol('T')   # Temperature (Intensive state variable)
-rho	= Symbol('rho') # Denisty (Intensive state variable)
+#rho	= Symbol('rho') # Denisty (Intensive state variable)
+rho     = symbols('rho', cls=Function)
+rho     = rho(P,T)
 
 # Reference constants from Section 6.1 p. 428 (p. 42 in PDF)
 T_c = sympify(647.096) * units.kelvin
@@ -114,12 +116,81 @@ expl_pressure_relation = pressure_relation.subs(expl_subs)
 # This work only uses the density of water, therefore a helper
 # function is definied for accessing density at a given pressure
 # and termperature
-def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9, derivative = None):
+
+def solve_relation_num(rel,
+		       subsd,
+		       varied_subs,
+		       initial_guess,
+		       **kwargs
+		       ):
     """
-    If a derivative is sought it must be specified as e.g:
-    derivative = [(T,1),(P,1)]
-    derivative = [(T,2)]
+    Solves non-linear equation numerically
     """
+
+    def f0(x):
+	subsd.update({varied_subs: x})
+	return rel.subs(subsd)
+
+    return find_root(f0, initial_guess, **kwargs)
+
+def solve_relation_for_derivatives(rel,
+				   subsd,
+				   func,  # Function which to solve for (incl. derivs)
+				   initial_guess_func_val,
+				   vals={},
+				   diff_wrt={}
+				   ):
+    """
+
+    E.g. assume we are trying to find the value of:
+     f, dfdx, d2fdx2, dfdy, d2fdy2 for the relation:
+
+     f(x,y) = ln(x*y+f(x,y))
+
+     relation = ln(x*y+f) - f   (x*y >= 1)
+     func = symbols('f', cls=Function)(x,y)
+     variables = (x,y)
+
+    relation = ln(x+y)*f(x,y)
+    Function = f
+
+    """
+
+    variables = func.args
+    assert vals.keys() == variables
+
+    queue =
+    for diffvar, order in diff_wrt.iteritems():
+	for i in range(1, order):
+
+
+    derivs
+
+
+    vals = {}
+    while diff_wrt:
+	vals[tuple(has_diff_wrt)] = get_water_density_derivative(relation,
+								has_diff_wrt,
+								cur_vals=vals,
+								P_val=P_val,
+								T_val=T_val,
+								**kwargs)
+	# var, order = goal_diff_wrt.pop()
+	# for i in range(1,order):
+
+	# relation = diff(relation, var, order)
+	# has_diff_wrt.append((var,order))
+	# cur_rho = get_water_density_derivative(relation,)
+	# var, order = diff_wrt.pop()
+	# guess = (f(x+h)-f(x))/h
+	# solve_relation_num(expl_pressure_relation,
+	# 			     {P: P_val, T: T_val},
+	# 			     rho, rho0,
+	# 			     **find_root_kwargs)
+
+    return get_water_density(P_val=None, T_val=None, **kwargs)
+
+def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9):
     if not P_val: P_val = sympify(101.3e3) * units.pascal
     if not T_val: T_val = sympify(298.15)  * units.kelvin
 
@@ -135,32 +206,19 @@ def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9, deri
     except:
         T_val *= units.kelvin
 
-    def f0(x_rho):
-        return expl_pressure_relation.subs({P:P_val,
-					    T:T_val,
-					    rho:x_rho}).evalf()
 
     rho0=sympify(1000.00) * units.kg/units.meter**3
 
-    current_rho = find_root(f0,
-                         rho0,
-                         dx0=-1.0 * units.kg/units.meter**3,
-                         xunit=units.kg/units.meter**3,
-                         maxiter=25,
-                         xabstol=abstol,
-                         verbose=verbose)
-    if derivative == None:
-        return current_rho
-    else:
-        def fder(x):
-            static_subs = {P:P_val,
-                           T:T_val,
-                           rho:current_rho
-                           }
-            var, order = derivative.pop()
-            guess = (f(x+h)-f(x))/h
-            return expr.subs().evalf())
-        return find_root(
+    find_root_kwargs = {'dx0':    -1.0 * units.kg/units.meter**3,
+			'xunit':   units.kg/units.meter**3,
+			'maxiter': 25,
+			'xabstol': abstol,
+			'verbose': verbose}
+
+    return solve_relation_num(expl_pressure_relation,
+				     {P: P_val, T: T_val},
+				     rho, rho0,
+				     **find_root_kwargs)
 
 
 
