@@ -16,7 +16,7 @@
 
 
 from functools import reduce
-from operator import and_
+from operator import and_, mul
 
 
 
@@ -71,14 +71,17 @@ def fixed_point_iteration_generator(G, x0, dGdx=None):
         dx_old = dx
 
 def print_info(i,x,dx,y,dy,dx_old, xunit=1.0, yunit=1.0,
-                 fmtstr="{0: >3}{1: >25}{2: >25}"+\
-                        "{3: >25}{4: >25}{5: >25}"):
+                 fmtstr="{0: >3}{1: >27}{2: >27}"+\
+                        "{3: >27}{4: >27}{5: >27}"):
     """
     For studying the convergence it is helpful to
     see how the values changes between steps.
     Call find_root with "verbose=True" in order
     to enable printing of intermediate values.
     """
+    if xunit != 1.0 or yunit != 1.0:
+	from sympy.mpmath import mp
+	mp.dps = 10
 
     if i==0:
 	if xunit != 1.0:
@@ -136,7 +139,10 @@ def find_root(func,
         if verbose: print "Using the secant method."
         if not dx0:
             # If no dx0 specified take an arbitrary step forward
-            dx0 = x0*1e-2 + 1e-6*xunit
+	    if x0 != 0:
+		dx0 = x0*1e-1
+	    else:
+		dx0 = 1e-7*xunit
             if verbose: print "Assuming dx0 = {0}".format(dx0)
         method = (secant_generator, (func, x0, dx0))
     else:
@@ -218,15 +224,15 @@ def solve_relation_num(rel,
 
 
 def test_solve_realtion_num():
-    from sympy import *
+    from sympy import symbols, Function, ln
     x,y = symbols('x,y')
     f = symbols('f',cls=Function)(x,y)
     relation = ln(x*y+f)-f
     x,y = solve_relation_num(relation, {x:2,y:1}, f, 1.0, verbose=True, yabstol=1e-9)
     assert abs(x-1.14619322062) < 1e-8
 
-    g = symbols('g', cls=Function)(x,y)
     x,y = symbols('x,y')
+    g = symbols('g', cls=Function)(x,y)
     relation = x**2+y**2-g # Circle
     g_val,delta_rel = solve_relation_num(relation, {x:1, y:0}, g, 0.1, verbose=True, abstol=1e-8)
     assert abs(g_val-1) < 1e-7
@@ -236,7 +242,8 @@ def solve_relation_for_derivatives(rel,
 				   subsd,
 				   func,  # Function which to solve for (incl. derivs)
 				   initial_guess_func_val,
-				   diff_wrt={}
+				   diff_wrt={},
+				   **kwargs
 				   ):
     """
     E.g. assume we are trying to find the value of:
@@ -244,7 +251,7 @@ def solve_relation_for_derivatives(rel,
 
      f(x,y) = ln(x*y+f(x,y))
 
-     f = symbols('f', cls=Function)(x,y)     
+     f = symbols('f', cls=Function)(x,y)
      rel = ln(x*y+f) - f   (x*y >= 1)
 
      variables = (x,y)
@@ -259,6 +266,7 @@ def solve_relation_for_derivatives(rel,
     drel      = {} # differentiated relaion
     deriv     = {} # symbolic derivative sought for
     deriv_val = {} # Value of the derivative sought for
+    err_deriv_val = {}
 
     # Start by differentiating with respect to one variable to first order,
     # then succesively increase order, then switch variable.
@@ -276,7 +284,7 @@ def solve_relation_for_derivatives(rel,
         # Find the relation by feeding the derived relation to "solve_relation_num"
         # using the symbolic derivative deriv[signature] as unknown.
         # But first we need a starting guess.
-        # 
+        #
         if all(v==0 for k,v in diff_step.iteritems()):
             # Not a derivative but the function itself
             initial_guess = initial_guess_func_val
@@ -284,26 +292,38 @@ def solve_relation_for_derivatives(rel,
             # There exist a 'parent' derivative from which we can
             # extract an initial guess for "solve_relation_num"
             parent_sig = None
-            for k,v in diffstep.iteritems():
+            for k,v in diff_step.iteritems():
                 if v > 0:
                     mod_diff_step = diff_step
                     mod_diff_step[k] = v - 1
-                    if tuple(mod_diff_step) in deriv_val.keys():
-                        parent_sig = tuple(mod_diff_step)
+                    if tuple(mod_diff_step.items()) in deriv_val.keys():
+                        parent_sig = tuple(mod_diff_step.items())
                         break
             if parent_sig == None: raise ValueError('no parent signature found!')
-            
+
             # Now let us identify which variable which derivation order
             # has increased by 1 from parentrelation.
 
-            new_order_var = MARKER
+            new_order_var = None
             for candidate in diff_step.keys():
-                if (dict(parent_sig)[candidate] + 1) == (dict(signature)):
-                    
-            h = deriv_val[]*1e-2 + 1e-4 # Arbitrary step
-            initial_guess = (drel[signature].subs(subsd+{deriv[signature]: func0+h})-drel[signature].subs(subsd+{deriv[signature]: func0}))/h
+		candidate_dict = dict(parent_sig)
+		candidate_dict[candidate] += 1
+                if candidate_dict == dict(signature):
+		    new_order_var = candidate
+	    if new_order_var == None: raise ValueError('The varible was not correctly determined')
+	    if subsd[new_order_var] != 0:
+		h = subsd[new_order_var]*1e-1
+	    else:
+		h = 1e-6*get_unit(subsd[new_order_var]) # Arbitrary step
+	    subsd_ph = dict(subsd.items()) # Deepcopy imitation
+	    subsd_ph[new_order_var] += h
+            initial_guess = get_unit(initial_guess_func_val)*(drel[parent_sig].subs(subsd_ph)-drel[parent_sig].subs(subsd))/h
+	    kwargs.update({'xunit':get_unit(initial_guess)})
+	    print initial_guess
+	    print subsd
 
-        deriv_val[signature] = solve_relation_num(drel[signature],
+        deriv_val[signature], err_deriv_val[signature] = solve_relation_num(
+	                                          drel[signature],
                                                   subsd,
                                                   deriv[signature],
                                                   initial_guess,
@@ -311,17 +331,42 @@ def solve_relation_for_derivatives(rel,
                                                   )
         subsd.update({deriv[signature]: deriv_val[signature]})
 
-    return deriv_val[signature]
+    return deriv_val, err_deriv_val
 
 
-def test_solve_realtion_num():
-    from sympy import *
+def test_solve_realtion_for_derivatives():
+    from sympy import symbols, Function, ln
 
-    g = symbols('g', cls=Function)(x,y)
+    x, y = symbols('x,y')
+    f = symbols('f',cls=Function)(x,y)
+    relation = ln(x*y+f)-f
+    df,df_err = solve_relation_for_derivatives(relation, {x:2,y:1}, f, 1.0, {x:2,y:1}, verbose=True, abstol=1e-8)
+    assert abs(df[((x,1),(y,0))]-0.46594127238) < 1e-8
+    assert abs(df[((x,0),(y,1))]-0.9318825447699826) < 1e-8
+    assert abs(df[((x,1),(y,1))]+0.17057414955751987) < 1e-8
+    assert abs(df[((x,2),(y,1))]-0.37120710736327495) < 1e-8
+
     x, y = symbols('x, y')
+    g = symbols('g', cls=Function)(x,y)
     relation = x**2+y**2-g # Circle
     subsd = {x: 1.0, y: 0.0}
     initial_guess_func_val = 0.5
     diff_wrt = {x: 1}
-    dgdx, dgdx_err = solve_relation_for_derivatives(relation, subsd, func, initial_guess_func_val, diff_wrt)
-    assert abs(dgdx-1.0) < 1e-7
+    dg, dg_err = solve_relation_for_derivatives(relation, subsd, g, initial_guess_func_val, diff_wrt, verbose=True, abstol=1e-7)
+    assert abs(dg[((x,1),)]-2.0) < 1e-7
+
+
+def get_unit(arg):
+    from sympy.physics import units
+    if hasattr(arg, 'as_ordered_factors'):
+	found_units = []
+	for factor in arg.as_ordered_factors():
+	    if str(factor) in units.__dict__:
+		found_units.append(factor)
+	    else:
+		if hasattr(factor, 'base'):
+		    if str(factor.base) in units.__dict__:
+			found_units.append(factor)
+	return reduce(mul,found_units)
+    else:
+	return 1.0

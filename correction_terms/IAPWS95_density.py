@@ -41,6 +41,8 @@ T_c = sympify(647.096) * units.kelvin
 rho_c = sympify(322.0) * units.kg / units.meter**3
 R = sympify(461.51805) * units.joule / units.kelvin / units.kg
 
+density_units = units.kg/units.meter**3
+
 # Reduced variables
 
 delta = Symbol('delta')
@@ -148,6 +150,42 @@ def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9):
 				     {P: P_val, T: T_val},
 				     rho, rho0,
 				     **find_root_kwargs)
+
+def test_get_water_density(verbose=False):
+    assert abs(get_water_density(verbose=verbose)[0]/density_units - 997.05) < 1e-2
+
+def get_water_density_derivatives(diff_wrt, P_val=None, T_val=None, verbose = False, abstol=1e-9):
+    if not P_val: P_val = sympify(101.3e3) * units.pascal
+    if not T_val: T_val = sympify(298.15)  * units.kelvin
+
+    # If P is without unit, assume Pascal:
+    try:
+        float(P_val/units.pascal)
+    except:
+        P_val *= units.pascal
+
+    # If T is without unit, assume Kelvin:
+    try:
+        float(T_val/units.kelvin)
+    except:
+        T_val *= units.kelvin
+
+
+    rho0=sympify(1000.00) * units.kg/units.meter**3
+
+    find_root_kwargs = {'xunit': density_units,
+			'xabstol': abstol,
+			'verbose': verbose}
+
+    return solve_relation_for_derivatives(expl_pressure_relation,
+					  {P: P_val, T: T_val},
+					  rho, rho0, diff_wrt,
+					  **find_root_kwargs)
+
+def test_get_water_density_derivatives(verbose=False):
+    drho, drho_err = get_water_density_derivatives({T:2,P:2},
+						   verbose=verbose)
+    assert abs(drho[((P,1),(T,1))]-1.1913e-9)<1e-3
 
 
 
