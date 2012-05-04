@@ -17,8 +17,8 @@
 
 from functools import reduce
 from operator import and_, mul
-
-
+from sympy_helpers import get_unit
+import numexpr as ne
 
 def secant_generator(f, x0, dx0):
     """
@@ -356,17 +356,3 @@ def test_solve_realtion_for_derivatives():
     assert abs(dg[((x,1),)]-2.0) < 1e-7
 
 
-def get_unit(arg):
-    from sympy.physics import units
-    if hasattr(arg, 'as_ordered_factors'):
-	found_units = []
-	for factor in arg.as_ordered_factors():
-	    if str(factor) in units.__dict__:
-		found_units.append(factor)
-	    else:
-		if hasattr(factor, 'base'):
-		    if str(factor.base) in units.__dict__:
-			found_units.append(factor)
-	return reduce(mul,found_units)
-    else:
-	return 1.0

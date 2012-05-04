@@ -24,9 +24,6 @@ from helpers import get_sympified
 
 import IAPWS95_constants as const
 
-# Standard state,
-P0    =	sympify(101.325e3)*units.pascal
-Tdash =	sympify(298.15)*units.kelvin
 
 
 # Variables
@@ -36,11 +33,11 @@ T	= Symbol('T')   # Temperature (Intensive state variable)
 rho     = symbols('rho', cls=Function)
 rho     = rho(P,T)
 
-# Reference constants from Section 6.1 p. 428 (p. 42 in PDF)
-T_c = sympify(647.096) * units.kelvin
-rho_c = sympify(322.0) * units.kg / units.meter**3
-R = sympify(461.51805) * units.joule / units.kelvin / units.kg
+# Standard state,
+P0    = const.standard_state_variables['P0']
+Tdash = const.standard_state_variables['Tdash']
 
+# Reference constants from Section 6.1 p. 428 (p. 42 in PDF)
 density_units = units.kg/units.meter**3
 
 # Reduced variables
@@ -48,12 +45,8 @@ density_units = units.kg/units.meter**3
 delta = Symbol('delta')
 tau   = Symbol('tau')
 
-expl_delta = rho/rho_c # Below eq 6.4 on p. 429 (p. 43 in PDF)
-expl_tau   = T_c/T     # Below eq 6.4 on p. 429 (p. 43 in PDF)
-expl_subs  = {delta: expl_delta, tau: expl_tau}
-
-func_delta = symbols('delta', cls = Function)
-func_tau   = symbols('tau', cls = Function)
+# func_delta = symbols('delta', cls = Function)
+# func_tau   = symbols('tau', cls = Function)
 
 
 _n0	 = get_sympified(const._n0)
@@ -110,41 +103,71 @@ for i in range(55,57):
 
 dphi__rddelta = diff(phi__r, delta)
 
+# Different relations can be used to numerically find thermodynamic
+# properties.
+
+def get_explicit(relation, unitless=True):
+    """
+    Turns a relation in delta and tay into a
+    relation in rho and T
+
+    Since handling units in the hughe equation
+    is quite heavy, unitless operation is default
+    """
+    const.critical_variables.return_unitless = unitless
+    rho_c = const.critical_variables['rho_c']
+    T_c   = const.critical_variables['T_c']
+
+    expl_delta = rho/rho_c # Below eq 6.4 on p. 429 (p. 43 in PDF)
+    expl_tau   = T_c/T     # Below eq 6.4 on p. 429 (p. 43 in PDF)
+    expl_subs  = {delta: expl_delta, tau: expl_tau}
+
+    return relation.subs(expl_subs)
+
 # Pressure relation, Table 6.3, p. 431 (p. 45 in PDF)
 pressure_relation      = P/(rho*R*T) - 1 - delta*dphi__rddelta
-expl_pressure_relation = pressure_relation.subs(expl_subs)
-
-
-# This work only uses the density of water, therefore a helper
-# function is definied for accessing density at a given pressure
-# and termperature
+expl_pressure_relation = get_explicit(pressure_relation)
 
 
 
-def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9):
-    if not P_val: P_val = sympify(101.3e3) * units.pascal
-    if not T_val: T_val = sympify(298.15)  * units.kelvin
 
-    # If P is without unit, assume Pascal:
-    try:
-        float(P_val/units.pascal)
-    except:
-        P_val *= units.pascal
-
-    # If T is without unit, assume Kelvin:
-    try:
-        float(T_val/units.kelvin)
-    except:
-        T_val *= units.kelvin
-
-
-    rho0=sympify(1000.00) * units.kg/units.meter**3
+def get_water_density(P_val=None, T_val=None, rho0=None verbose = False, abstol=1e-9, unitless=True):
+    """
+    This work only uses the density of water, therefore a helper
+    function is definied for accessing density at a given pressure
+    and termperature
+    """
+    
+    if not P_val: P_val = sympify(101.3e3)
+    if not T_val: T_val = sympify(298.15)
+    if not rho0:  rho0  = sympify(1000.00)
 
     find_root_kwargs = {'dx0':    -1.0 * units.kg/units.meter**3,
-			'xunit':   units.kg/units.meter**3,
-			'maxiter': 25,
+                        'maxiter': 25,
 			'xabstol': abstol,
 			'verbose': verbose}
+
+    if not unitless:
+        find_root_kwargs['xunit'] = units.kg/units.meter**3
+        find_root_kwargs['dx0'] * = find_root_kwargs['xunit']
+        # If P is without unit, assume Pascal:
+        try:
+            float(P_val/units.pascal)
+        except:
+            P_val *= units.pascal
+
+        # If T is without unit, assume Kelvin:
+        try:
+            float(T_val/units.kelvin)
+        except:
+            T_val *= units.kelvin
+
+        # If rho0 is without unit, assume units.kg/units.meter**3:
+        try:
+            float(rho0/(units.kg/units.meter**3))
+        except:
+            rho0 *= units.kg/units.meter**3
+
 
     return solve_relation_num(expl_pressure_relation,
 				     {P: P_val, T: T_val},
@@ -152,7 +175,7 @@ def get_water_density(P_val=None, T_val=None, verbose = False, abstol=1e-9):
 				     **find_root_kwargs)
 
 def test_get_water_density(verbose=False):
-    assert abs(get_water_density(verbose=verbose)[0]/density_units - 997.05) < 1e-2
+    assert abs(get_unitless(get_water_density(verbose=verbose)) - 997.05) < 1e-2
 
 def get_water_density_derivatives(diff_wrt, P_val=None, T_val=None, verbose = False, abstol=1e-9):
     if not P_val: P_val = sympify(101.3e3) * units.pascal
