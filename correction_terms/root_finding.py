@@ -198,7 +198,7 @@ def find_root(func,
     if return_intermediate_results:
         return interm_res
     else:
-	return x,y
+	return x,dx
 
 def solve_relation_num(rel,
 		       subsd,
@@ -218,10 +218,18 @@ def solve_relation_num(rel,
 
 
 def test_solve_realtion_num():
+    from sympy import *
+    x,y = symbols('x,y')
     f = symbols('f',cls=Function)(x,y)
     relation = ln(x*y+f)-f
-    x,y = solve_relation_num(relation, subsd={x:2,y:1},varied_subs=f,initial_guess=1.0,verbose=True,yabstol=1e-9)
+    x,y = solve_relation_num(relation, {x:2,y:1}, f, 1.0, verbose=True, yabstol=1e-9)
     assert abs(x-1.14619322062) < 1e-8
+
+    g = symbols('g', cls=Function)(x,y)
+    x,y = symbols('x,y')
+    relation = x**2+y**2-g # Circle
+    g_val,delta_rel = solve_relation_num(relation, {x:1, y:0}, g, 0.1, verbose=True, abstol=1e-8)
+    assert abs(g_val-1) < 1e-7
 
 
 def solve_relation_for_derivatives(rel,
@@ -248,18 +256,53 @@ def solve_relation_for_derivatives(rel,
     from functools import reduce
     from sympy import Derivative
 
-    for wrt in diff_wrt:
-        assert wrt in func.args
+    drel      = {} # differentiated relaion
+    deriv     = {} # symbolic derivative sought for
+    deriv_val = {} # Value of the derivative sought for
 
-    drel, deriv, deriv_val = {}, {}, {}
-    
+    # Start by differentiating with respect to one variable to first order,
+    # then succesively increase order, then switch variable.
     for diff_step in get_dict_combinations_for_diff(diff_wrt):
-        signature = tuple(diff_step.items())
+        # Lets make a signature e.g. ((x,1), (y,1)) corresponds to d2fdxdy
+        signature = tuple(diff_step.items()) # We need something hashable
+
+        # Now let us differentiate the relation wrt the variables of the sig.
         drel[signature] = rel.diff(*reduce(add,signature))
+
+        # Let us identify the symbolic form of the sought for derivative
         deriv[signature] = Derivative(func, *reduce(add,signature))
-        func0 = 
-        h = 
-        initial_guess = (rel.subs(subsd+{func: func0+h})-rel.subs(subsd+{func: func0}))/h
+
+
+        # Find the relation by feeding the derived relation to "solve_relation_num"
+        # using the symbolic derivative deriv[signature] as unknown.
+        # But first we need a starting guess.
+        # 
+        if all(v==0 for k,v in diff_step.iteritems()):
+            # Not a derivative but the function itself
+            initial_guess = initial_guess_func_val
+        else:
+            # There exist a 'parent' derivative from which we can
+            # extract an initial guess for "solve_relation_num"
+            parent_sig = None
+            for k,v in diffstep.iteritems():
+                if v > 0:
+                    mod_diff_step = diff_step
+                    mod_diff_step[k] = v - 1
+                    if tuple(mod_diff_step) in deriv_val.keys():
+                        parent_sig = tuple(mod_diff_step)
+                        break
+            if parent_sig == None: raise ValueError('no parent signature found!')
+            
+            # Now let us identify which variable which derivation order
+            # has increased by 1 from parentrelation.
+
+            new_order_var = MARKER
+            for candidate in diff_step.keys():
+                if (dict(parent_sig)[candidate] + 1) == (dict(signature)):
+                    
+            h = deriv_val[]*1e-2 + 1e-4 # Arbitrary step
+            initial_guess = (drel[signature].subs(subsd+{deriv[signature]: func0+h})-drel[signature].subs(subsd+{deriv[signature]: func0}))/h
+
         deriv_val[signature] = solve_relation_num(drel[signature],
                                                   subsd,
                                                   deriv[signature],
@@ -271,4 +314,14 @@ def solve_relation_for_derivatives(rel,
     return deriv_val[signature]
 
 
+def test_solve_realtion_num():
+    from sympy import *
 
+    g = symbols('g', cls=Function)(x,y)
+    x, y = symbols('x, y')
+    relation = x**2+y**2-g # Circle
+    subsd = {x: 1.0, y: 0.0}
+    initial_guess_func_val = 0.5
+    diff_wrt = {x: 1}
+    dgdx, dgdx_err = solve_relation_for_derivatives(relation, subsd, func, initial_guess_func_val, diff_wrt)
+    assert abs(dgdx-1.0) < 1e-7
