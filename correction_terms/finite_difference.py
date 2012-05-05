@@ -2,7 +2,7 @@
 
 import numpy as np
 
-def get_derivative_from_finite_difference(order,x_list,y_list,x0, verbose=False):
+def get_derivative_from_finite_difference(order,x_list,y_list,x0):
     """
     Algorithm from:
     Generation of Finite Difference Formulas on Arbitrarily Spaced Grids, Bengt Fornberg
@@ -14,38 +14,21 @@ def get_derivative_from_finite_difference(order,x_list,y_list,x0, verbose=False)
     M=order; N=len(x_list)-1
     delta = np.zeros((M+1,N+1,N+1))
     delta[0,0,0]=1.0
-    if verbose: print 'delta[0,0,0]=1'
     c1 = 1.0
-    if verbose: print 'c1 =',str(c1)
     for n in range(1,N+1):
         c2 = 1.0
-        if verbose: print 'c2 =',str(c2)
         for nu in range(0,n):
             c3 = x_list[n]-x_list[nu]
-            if verbose: print 'c3 = x_list['+str(n)+']-x_list['+str(nu)+'] =', c3
-            if verbose: print 'c2 = c2 * c3 =',str(c2)+' * '+str(c3)+' =',
             c2 = c2 * c3
-            if verbose: print c2
             if n <= M: delta[n,n-1,nu]=0
             for m in range(0,min(n,M)+1):
                 delta[m,n,nu] = ( (x_list[n]-x0)*delta[m,n-1,nu] - m*delta[m-1,n-1,nu] )/c3
-                tmp = '(x_list['+str(n)+']-'+str(x0)+')*delta['+str(m)+','+str(n-1)+','+str(nu)+'] - '+str(m)+'*delta['+str(m-1)+','+str(n-1)+','+str(nu)+']'
-                if verbose: print 'a: delta['+str(m)+']['+str(n)+']['+str(nu)+'] = ('+tmp+')/'+str(c3)+' =', delta[m,n,nu] #
         for m in range(0,min(n,M)+1):
             delta[m,n,n] = c1/c2*( m*delta[m-1,n-1,n-1] - (x_list[n-1]-x0)*delta[m,n-1,n-1] )
-            if verbose:
-                print 'b: delta['+str(m)+']['+str(n)+']['+str(n)+'] ='
-                print ' =','c1/c2*( '+str(m)+'*delta['+str(m-1)+','+str(n-1)+','+str(n-1)+'] - (x_list['+str(n-1)+']-x0)*delta['+str(m)+','+str(n-1)+','+str(n-1)+'] )'
-                print ' =',str(c1)+'/'+str(c2)+'*( '+str(m)+'*'+str(delta[m-1,n-1,n-1])+' - ('+str(x_list[n-1])+'-'+str(x0)+')*'+str(delta[m,n-1,n-1])+' )'
-                print ' =',delta[m,n,n] #
         c1 = c2
-        if verbose: print 'c1 = c2 =',str(c1)
     derivative = 0
-    if verbose: print 'delta,final\n',delta[:,:,:]
-    n = N # m, m + 1, ..., N
-    m = M # 0, 1, ..., M
-    for nu in range(0,n+1):
-        derivative += delta[m,n,nu]*y_list[nu]
+    for nu in range(0,N+1):
+        derivative += delta[M,N,nu]*y_list[nu]
     return derivative
 
 

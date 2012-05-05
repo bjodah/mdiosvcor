@@ -1,3 +1,4 @@
+from sympy import sympify
 
 def get_unit(arg):
     from sympy.physics import units
@@ -16,3 +17,12 @@ def get_unit(arg):
 
 def get_unitless(arg):
     return arg / get_unit(arg)
+
+
+def get_sympified(instance):
+    if hasattr(instance, 'iteritems'):
+	return dict([(k,sympify(v)) for k,v in instance.iteritems()])
+    elif hasattr(instance, '__iter__'):
+	return [sympify(x) for x in instance]
+    else:
+	NotImplemented
