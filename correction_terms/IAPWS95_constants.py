@@ -10,33 +10,34 @@
 # copyright and related or neighboring rights to this work.
 
 from sympy_helpers import get_unit, get_unitless
-
+from sympy import sympify
+from sympy.physics import units
 # Constants used in the master equation
 class ParameterStore(object):
     """
 
     """
-    
+
     def __init__(self, parameters, return_unitless=True):
         """
-        
+
         Arguments:
         - `unitless`: Default
         """
         self._parameters = parameters
         self.return_unitless = return_unitless
-        
+
     def keys(self): return self._parameters.keys()
 
     def __getitem__(self, item):
-        if self._unitless:
+        if self.return_unitless:
             return get_unitless(self._parameters[item])
         else:
             return self._parameters[item]
 
-critical_variables = ParameterStore({'T_c': sympify(647.096) * units.kelvin
-                                     'rho_c': sympify(322.0) * units.kg / units.meter**3
-                                     'R': sympify(461.51805) * units.joule / units.kelvin / units.kg}) 
+ref_variables = ParameterStore({'T_c': sympify(647.096) * units.kelvin,
+                                     'rho_c': sympify(322.0) * units.kg / units.meter**3,
+                                     'R': sympify(461.51805) * units.joule / units.kelvin / units.kg})
 
 standard_state_variables = ParameterStore({'P0'    : sympify(101.325e3)*units.pascal,
                                            'Tdash' :	sympify(298.15)*units.kelvin

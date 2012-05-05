@@ -18,7 +18,23 @@
 from functools import reduce
 from operator import and_, mul
 from sympy_helpers import get_unit
-import numexpr as ne
+
+try:
+    import numexpr as ne
+except ImportError:
+    ne = False
+
+def get_cb_from_rel(rel, subsd, varied, use_numexpr=True):
+    subsrel = rel.subs(subsd)
+    if use_numexpr:
+	def f0(x):
+	    return ne.evaluate(str(subsrel), {str(varied): x})
+    else:
+	def f0(x):
+	    subsd.update({varied: x})
+	    return rel.subs(subsd)
+
+    return f0
 
 def secant_generator(f, x0, dx0):
     """
@@ -208,33 +224,30 @@ def find_root(func,
 
 def solve_relation_num(rel,
 		       subsd,
-		       varied_subs,
+		       varied,
 		       initial_guess,
+		       use_numexpr=False,
 		       **kwargs
 		       ):
     """
     Solves non-linear (sympy) equation numerically
     """
-
-    def f0(x):
-	subsd.update({varied_subs: x})
-	return rel.subs(subsd)
-
+    f0 = get_cb_from_rel(rel, subsd, varied, use_numexpr)
     return find_root(f0, initial_guess, **kwargs)
 
 
-def test_solve_realtion_num():
+def test_solve_realtion_num(use_numexpr=False):
     from sympy import symbols, Function, ln
     x,y = symbols('x,y')
     f = symbols('f',cls=Function)(x,y)
     relation = ln(x*y+f)-f
-    x,y = solve_relation_num(relation, {x:2,y:1}, f, 1.0, verbose=True, yabstol=1e-9)
+    x,y = solve_relation_num(relation, {x:2,y:1}, f, 1.0, use_numexpr, verbose=True, yabstol=1e-9)
     assert abs(x-1.14619322062) < 1e-8
 
     x,y = symbols('x,y')
     g = symbols('g', cls=Function)(x,y)
     relation = x**2+y**2-g # Circle
-    g_val,delta_rel = solve_relation_num(relation, {x:1, y:0}, g, 0.1, verbose=True, abstol=1e-8)
+    g_val,delta_rel = solve_relation_num(relation, {x:1, y:0}, g, 0.1, use_numexpr, verbose=True, abstol=1e-8)
     assert abs(g_val-1) < 1e-7
 
 
@@ -246,6 +259,7 @@ def solve_relation_for_derivatives(rel,
 				   **kwargs
 				   ):
     """
+
     E.g. assume we are trying to find the value of:
      f, dfdx, d2fdx2, dfdy, d2fdy2 for the relation:
 
