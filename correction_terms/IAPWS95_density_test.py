@@ -29,9 +29,9 @@ phi__r_ref_500 = {
                  'd2fddeltadtau' :-0.112176915e1,
                  }
 
-state_500_subs = {tau: T_c / (sympify(500.0) * units.kelvin),
-                  delta: sympify(838.025) * units.kg / units.meter**3\
-		         / rho_c
+state_500_subs = {tau_: val_T_c / (sympify(500.0) * units.kelvin),
+                  delta_: sympify(838.025) * units.kg / units.meter**3\
+		         / val_rho_c
                   }
 
 phi0_ref_647 =  {
@@ -52,9 +52,9 @@ phi__r_ref_647 = {
                   'd2fddeltadtau' :-0.133214720e1,
                  }
 
-state_647_subs = {tau:   T_c / (sympify(647.0) * units.kelvin),
-                  delta: sympify(358.0) * units.kg / units.meter**3 \
-		         / rho_c
+state_647_subs = {tau_:   val_T_c / (sympify(647.0) * units.kelvin),
+                  delta_: sympify(358.0) * units.kg / units.meter**3 \
+		         / val_rho_c
                   }
 
 global derivative_order
@@ -70,17 +70,17 @@ derivative_vars = {
     #       explicitly with respect to tau/delta respectively
     #       is that sympy complains on rho_c/T_c having units
     'f'             :None,
-    'dfddelta'      :(delta, 1),
-    'd2fddelta2'    :(delta, 2),
-    'dfdtau'        :(tau, 1),
-    'd2fdtau2'      :(tau, 2),
-    'd2fddeltadtau' :(delta, 1, tau, 1)
+    'dfddelta'      :(delta_, 1),
+    'd2fddelta2'    :(delta_, 2),
+    'dfdtau'        :(tau_, 1),
+    'd2fdtau2'      :(tau_, 2),
+    'd2fddeltadtau' :(delta_, 1, tau_, 1)
 }
 
-refs = [(state_500_subs, phi0,   phi0_ref_500),
-        (state_500_subs, phi__r, phi__r_ref_500),
-	(state_647_subs, phi0,   phi0_ref_647),
-	(state_647_subs, phi__r, phi__r_ref_647)]
+refs = [(state_500_subs, phi0_,   phi0_ref_500),
+        (state_500_subs, phi__r_, phi__r_ref_500),
+	(state_647_subs, phi0_,   phi0_ref_647),
+	(state_647_subs, phi__r_, phi__r_ref_647)]
 
 class Test_ref(unittest.TestCase):
     """
@@ -101,7 +101,6 @@ class Test_ref(unittest.TestCase):
 		    deriv = func
 		calc_vals.append(deriv.subs(subs_d))
 	    calc_vals = np.array([float(x) for x in calc_vals])
-	    print [calc_vals, ref_vals]
 	    self.assertTrue(np.allclose(calc_vals,ref_vals),
 			    'Discrepancy in %s' % str(subs_d))
 

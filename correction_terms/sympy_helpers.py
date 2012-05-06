@@ -13,7 +13,10 @@ def get_unit(arg):
 		if hasattr(factor, 'base'):
 		    if str(factor.base) in units.__dict__:
 			found_units.append(factor)
-	return reduce(mul,found_units)
+	if len(found_units) > 0:
+	    return reduce(mul,found_units)
+	else:
+	    return 1.0
     else:
 	return 1.0
 

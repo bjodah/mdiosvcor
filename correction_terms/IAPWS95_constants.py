@@ -18,7 +18,7 @@ class ParameterStore(object):
 
     """
 
-    def __init__(self, parameters, return_unitless=True):
+    def __init__(self, parameters, return_unitless=False):
         """
 
         Arguments:

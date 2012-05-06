@@ -24,17 +24,17 @@ try:
 except ImportError:
     ne = False
 
-def get_cb_from_rel(rel, subsd, varied, use_numexpr=True):
+def get_cb_from_rel(rel, subsd, varied, use_numexpr=False):
     subsrel = rel.subs(subsd)
     if use_numexpr:
 	def f0(x):
 	    return ne.evaluate(str(subsrel), {str(varied): x})
     else:
 	def f0(x):
-	    subsd.update({varied: x})
-	    return rel.subs(subsd)
+	    return subsrel.subs({varied: x})
 
     return f0
+
 
 def secant_generator(f, x0, dx0):
     """
@@ -49,6 +49,7 @@ def secant_generator(f, x0, dx0):
         x1, x2 = x, x1
         f2, f1 = f1, f(x1)
         yield x1, f1
+
 
 def newton_generator(f, x0, dfdx):
     """
@@ -205,7 +206,9 @@ def find_root(func,
     i = 0
     x0, y0 = method_gen.next()
     dx, dx_old, dy = None, None, None
+    print 'before print-info'
     if verbose: print_info(i,x0,dx,y0,dy,dx_old,xunit,yunit)
+    print 'before method_gen loop' ###
     for x,y in method_gen:
         i     += 1
         dx_old = dx
@@ -236,7 +239,7 @@ def solve_relation_num(rel,
     return find_root(f0, initial_guess, **kwargs)
 
 
-def test_solve_realtion_num(use_numexpr=False):
+def test_solve_relation_num(use_numexpr=False):
     from sympy import symbols, Function, ln
     x,y = symbols('x,y')
     f = symbols('f',cls=Function)(x,y)

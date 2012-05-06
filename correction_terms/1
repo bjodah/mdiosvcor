@@ -1,0 +1,1013 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "root_finding.py", line 245, in test_solve_relation_num
+    x,y = solve_relation_num(relation, {x:2,y:1}, f, 1.0, use_numexpr, verbose=True, yabstol=1e-9)
+  File "root_finding.py", line 237, in solve_relation_num
+    return find_root(f0, initial_guess, **kwargs)
+  File "root_finding.py", line 209, in find_root
+    if verbose: print_info(i,x0,dx,y0,dy,dx_old,xunit,yunit)
+  File "root_finding.py", line 120, in print_info
+    print fmtstr.format(i,x/xunit,"-",y/yunit,"-","-")
+  File "/usr/lib/python2.7/dist-packages/sympy/core/basic.py", line 477, in __str__
+    return sstr(self, order=None)
+  File "/usr/lib/python2.7/dist-packages/sympy/printing/str.py", line 482, in sstr
+    s = p.doprint(expr)
+  File "/usr/lib/python2.7/dist-packages/sympy/printing/printer.py", line 224, in doprint
+    return self._str(self._print(expr))
+  File "/usr/lib/python2.7/dist-packages/sympy/printing/printer.py", line 248, in _print
+    return getattr(self, printmethod)(expr, *args)
+  File "/usr/lib/python2.7/dist-packages/sympy/printing/str.py", line 44, in _print_Add
+    terms = self._as_ordered_terms(expr, order=order)
+  File "/usr/lib/python2.7/dist-packages/sympy/printing/printer.py", line 262, in _as_ordered_terms
+    return expr.as_ordered_terms(order=order)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 323, in as_ordered_terms
+    terms, gens = self.as_terms()
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 362, in as_terms
+    coeff *= complex(factor)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 133, in __complex__
+    re, im = result.as_real_imag()
+  File "/usr/lib/python2.7/dist-packages/sympy/functions/elementary/exponential.py", line 404, in as_real_imag
+    abs = C.Abs(self.args[0].expand(deep, **hints))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/cache.py", line 101, in wrapper
+    func_cache_it_cache[k] = r = func(*args, **kw_args)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/function.py", line 174, in __new__
+    evaluated = cls.eval(*args)
+  File "/usr/lib/python2.7/dist-packages/sympy/functions/elementary/complexes.py", line 250, in eval
+    if arg.is_zero:     return arg
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 280, in _what_known_about
+    a = getattr(self,'is_'+pk)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 280, in _what_known_about
+    a = getattr(self,'is_'+pk)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 280, in _what_known_about
+    a = getattr(self,'is_'+pk)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 280, in _what_known_about
+    a = getattr(self,'is_'+pk)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 280, in _what_known_about
+    a = getattr(self,'is_'+pk)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 257, in _what_known_about
+    a = getattr(self,'_eval_is_'+k)()
+  File "/usr/lib/python2.7/dist-packages/sympy/core/add.py", line 298, in _eval_is_positive
+    if c.is_positive and r.is_positive:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 139, in __lt__
+    if dif.is_negative != dif.is_nonnegative:
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 369, in getit
+    return self._what_known_about(name)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/assumptions.py", line 301, in _what_known_about
+    c = cmp(v, 0)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 138, in __lt__
+    dif = self - other
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 75, in __sympifyit_wrapper
+    return func(a, sympify(b, strict=True))
+  File "/usr/lib/python2.7/dist-packages/sympy/core/decorators.py", line 115, in binary_op_wrapper
+    return func(self, other)
+  File "/usr/lib/python2.7/dist-packages/sympy/core/expr.py", line 87, in __sub__
+    return Add(self, -other)
+RuntimeError: maximum recursion depth exceeded

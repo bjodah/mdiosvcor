@@ -20,7 +20,7 @@ from __future__ import division
 from sympy import *
 from sympy.physics import units
 from root_finding import find_root, solve_relation_num, solve_relation_for_derivatives
-from helpers import get_sympified
+from sympy_helpers import get_sympified, get_unitless
 
 
 import IAPWS95_constants as const
@@ -37,8 +37,8 @@ rho_     = symbols('rho', cls=Function)
 rho_     = rho_(P_,T_)
 
 # Standard state,
-_P0    = const.standard_state_variables['P0']
-_Tdash = const.standard_state_variables['Tdash']
+val_P0    = const.standard_state_variables['P0']
+val_Tdash = const.standard_state_variables['Tdash']
 
 # Reference constants from Section 6.1 p. 428 (p. 42 in PDF)
 density_units = units.kg/units.meter**3
@@ -89,7 +89,7 @@ for i in range(55,57):
     # Below Eq. 6.6 on p. 429 (p. 43 in PDF)
     Psi_[i]   = exp(-_C[i]*(delta_ - 1)**2 - _D[i]*(tau_ - 1)**2)
     Theta_[i] = (1 - tau_)+_A[i]*((delta_ - 1)**2)**(1/(2*_beta[i]))
-    Delta_[i] = Theta[i]**2 + _B[i]*((delta_ - 1)**2)**_a[i]
+    Delta_[i] = Theta_[i]**2 + _B[i]*((delta_ - 1)**2)**_a[i]
 
 
 # Eq 6.6 p. 429
@@ -102,12 +102,17 @@ for i in range(8,52):
 for i in range(52,55):
     phi__r_ += _n[i]*delta_**_d[i]*tau_**_t[i]*exp(-_alpha[i]*(delta_ - _epsilon[i])**2 - _beta[i]*(tau_ - _gamma[i])**2)
 for i in range(55,57):
-    phi__r_ += _n[i]*Delta_[i]**_b[i]*delta_*Psi[i]
+    phi__r_ += _n[i]*Delta_[i]**_b[i]*delta_*Psi_[i]
 
 dphi__rddelta_ = diff(phi__r_, delta_)
 
 # Different relations can be used to numerically find thermodynamic
 # properties.
+
+val_R = const.ref_variables['R']
+val_rho_c = const.ref_variables['rho_c']
+val_T_c   = const.ref_variables['T_c']
+
 
 def get_explicit(relation, unitless=True):
     """
@@ -118,81 +123,81 @@ def get_explicit(relation, unitless=True):
     is quite heavy, unitless operation is default
     """
     const.ref_variables.return_unitless = unitless
-    _rho_c = const.ref_variables['rho_c']
-    _T_c   = const.ref_variables['T_c']
 
-    expl_delta_ = rho_/_rho_c # Below eq 6.4 on p. 429 (p. 43 in PDF)
-    expl_tau_   = _T_c/T_     # Below eq 6.4 on p. 429 (p. 43 in PDF)
+    expl_delta_ = rho_/val_rho_c # Below eq 6.4 on p. 429 (p. 43 in PDF)
+    expl_tau_   = val_T_c/T_     # Below eq 6.4 on p. 429 (p. 43 in PDF)
     expl_subs  = {delta_: expl_delta_, tau_: expl_tau_}
 
     return relation.subs(expl_subs)
 
 # Pressure relation, Table 6.3, p. 431 (p. 45 in PDF)
-pressure_relation      = P_/(rho_*_R*T_) - 1 - delta_*dphi__rddelta_
+
+pressure_relation      = P_/(rho_*val_R*T_) - 1 - delta_*dphi__rddelta_
 expl_pressure_relation = get_explicit(pressure_relation)
 
 
-def get_water_density(_P=None, _T=None, _rho0=None, verbose = False, abstol=1e-9, unitless=True):
+def get_water_density(val_P=None, val_T=None, val_rho0=None, verbose = False, abstol=1e-9):
     """
     This work only uses the density of water, therefore a helper
     function is definied for accessing density at a given pressure
     and termperature
     """
 
-    if not _P:  _P = sympify(101.3e3)
-    if not _T:  _T = sympify(298.15)
-    if not _rho0: _rho0  = sympify(1000.00)
+    if not val_P:  val_P = val_P0
+    if not val_T:  val_T = val_Tdash
+    if not val_rho0: val_rho0  = sympify(1000.00) * density_units
 
-    find_root_kwargs = {'dx0':    -1.0 * units.kg/units.meter**3,
+    find_root_kwargs = {'dx0':    -1.0 * density_units,
+			'xunit':  density_units,
                         'maxiter': 25,
 			'xabstol': abstol,
 			'verbose': verbose}
 
-    if not unitless:
-        find_root_kwargs['xunit'] = units.kg/units.meter**3
-        find_root_kwargs['dx0']  *= find_root_kwargs['xunit']
-        # If P is without unit, assume Pascal:
-        try:
-            float(_P/units.pascal)
-        except:
-            _P *= units.pascal
+    # If P is without unit, assume Pascal:
+    try:
+	float(val_P/units.pascal)
+    except:
+	if verbose: print 'Assumeing pressure eneterd in Pascal'
+	val_P *= units.pascal
 
-        # If T is without unit, assume Kelvin:
-        try:
-            float(_T/units.kelvin)
-        except:
-            _T *= units.kelvin
+    # If T is without unit, assume Kelvin:
+    try:
+	float(val_T/units.kelvin)
+    except:
+	if verbose: print 'Assumeing temperature eneterd in Kelvin'
+	val_T *= units.kelvin
 
-        # If rho0 is without unit, assume units.kg/units.meter**3:
-        try:
-            float(_rho0/(units.kg/units.meter**3))
-        except:
-            _rho0 *= units.kg/units.meter**3
+    # If rho0 is without unit, assume units.kg/units.meter**3:
+    try:
+	float(val_rho0/(units.kg/units.meter**3))
+    except:
+	if verbose: print 'Assuming density entered in kg / m^3'
+	val_rho0 *= units.kg/units.meter**3
 
 
     return solve_relation_num(expl_pressure_relation,
-				     {P_: _P, T_: _T},
-				     rho_, _rho0,
+				     {P_: val_P, T_: val_T},
+				     rho_, val_rho0,
 				     **find_root_kwargs)
 
 def test_get_water_density(verbose=False):
     assert abs(get_unitless(get_water_density(verbose=verbose)) - 997.05) < 1e-2
 
-def get_water_density_derivatives(diff_wrt, _P=None, _T=None, verbose = False, abstol=1e-9):
-    if not _P: _P = sympify(101.3e3) * units.pascal
-    if not _T: _T = sympify(298.15)  * units.kelvin
+def get_water_density_derivatives(diff_wrt, val_P=None, val_T=None, verbose = False, abstol=1e-9):
+    if not val_P: val_P = sympify(101.3e3) * units.pascal
+    if not val_T: val_T = sympify(298.15)  * units.kelvin
 
     # If P is without unit, assume Pascal:
     try:
-        float(_P/units.pascal)
+        float(val_P/units.pascal)
     except:
-        _P *= units.pascal
+        val_P *= units.pascal
 
     # If T is without unit, assume Kelvin:
     try:
-        float(_T/units.kelvin)
+        float(val_T/units.kelvin)
     except:
-        _T *= units.kelvin
+        val_T *= units.kelvin
 
 
     rho0=sympify(1000.00) * units.kg/units.meter**3
@@ -202,7 +207,7 @@ def get_water_density_derivatives(diff_wrt, _P=None, _T=None, verbose = False, a
 			'verbose': verbose}
 
     return solve_relation_for_derivatives(expl_pressure_relation,
-					  {P: _P, T: _T},
+					  {P: val_P, T: val_T},
 					  rho, rho0, diff_wrt,
 					  **find_root_kwargs)
 
