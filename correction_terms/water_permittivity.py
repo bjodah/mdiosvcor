@@ -12,18 +12,19 @@ from manuscript_constants import P0, Tdash
 P  = Symbol('P') # Pressure (Intensive state variable)
 T  = Symbol('T') # Temperature (Intensive state variable)
 
-U1 =  3.4279e2
-U2 = -5.0866e-3 / units.kelvin
-U3 =  9.4690e-7 / units.kelvin / units.kelvin
-U4 = -2.0525
-U5 =  3.1159e3  * units.kelvin
-U6 = -1.8289e2  * units.kelvin
-U7 = -8.0325e3  * units.bar
-U8 =  4.2142e6  * units.kelvin * units.bar
-U9 =  2.1417    / units.kelvin * units.bar
-B  = U7 + U8/T + U9*T
-C  = U4 + U5/(U6+T)
-eps1000 = U1*exp(U2*T+U3*T**2)
+U = [0,
+  3.4279e2,
+ -5.0866e-3 / units.kelvin,
+  9.4690e-7 / units.kelvin / units.kelvin,
+ -2.0525,
+  3.1159e3  * units.kelvin,
+ -1.8289e2  * units.kelvin,
+ -8.0325e3  * units.bar,
+  4.2142e6  * units.kelvin * units.bar,
+  2.1417    / units.kelvin * units.bar]
+B  = U[7] + U[8]/T + U[9]*T
+C  = U[4] + U[5]/(U[6]+T)
+eps1000 = U[1]*exp(U[2]*T+U[3]*T**2)
 eps = eps1000 + C*ln((B+P)/(B+1000.0*units.bar))
 
 def get_water_eps(P_val,T_val, expr=eps):

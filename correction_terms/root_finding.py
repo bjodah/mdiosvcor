@@ -25,7 +25,18 @@ except ImportError:
     ne = False
 
 def get_cb_from_rel(rel, subsd, varied, use_numexpr=False):
-    subsrel = rel.subs(subsd)
+    """
+    Turn a symbolic (sympy) equation into a python callback
+    of one variable.
+    """
+    from sympy import symbols
+    # If varied is general function dep. on (x,y) we cannot
+    # substitute for x and y without error. Therefore we
+    # mask `varied` as dummy and resubstitute it later
+    dummy = symbols('_dummy_')
+    subsrel = rel.subs({varied:dummy})
+    subsrel = subsrel.subs(subsd)
+    subsrel = subsrel.subs({dummy:varied})
     if use_numexpr:
 	def f0(x):
 	    return ne.evaluate(str(subsrel), {str(varied): x})
@@ -34,6 +45,18 @@ def get_cb_from_rel(rel, subsd, varied, use_numexpr=False):
 	    return subsrel.subs({varied: x})
 
     return f0
+
+
+def test_get_cb_from_rel():
+    from sympy import symbols, Function, ln
+    x,y = symbols('x,y')
+    f = symbols('f',cls=Function)(x,y)
+    relation = ln(x*y+f)-f
+    subsd = {x:2,y:1}
+    varied = f
+    initial_guess = 1.0
+    cb = get_cb_from_rel(relation, subsd, f)
+    assert cb(1.14619322062) < 1e-12
 
 
 def secant_generator(f, x0, dx0):
@@ -117,11 +140,11 @@ def print_info(i,x,dx,y,dy,dx_old, xunit=1.0, yunit=1.0,
 	    sdy	      = 'dy'
 
         print fmtstr.format("i",sx,sdx,sy,sdy,sdxidxim1)
-        print fmtstr.format(i,x/xunit,"-",y/yunit,"-","-")
+        print fmtstr.format(i, x/xunit, "-", y/yunit, "-", "-")
     elif i ==1:
-        print fmtstr.format(i,x/xunit,dx/xunit,y/yunit,dy/yunit,'-')
+        print fmtstr.format(i, x/xunit, dx/xunit, y/yunit, dy/yunit, '-')
     else:
-        print fmtstr.format(i,x/xunit,dx/xunit,y/yunit,dy/yunit,dx/dx_old**2*xunit)
+        print fmtstr.format(i, x/xunit, dx/xunit, y/yunit, dy/yunit, dx/dx_old**2*xunit)
 
 def find_root(func,
               x0,
@@ -165,7 +188,6 @@ def find_root(func,
     else:
         NotImplemented
 
-
     # Setup tolerance requierments
     satisfication_functions = []
 
@@ -206,9 +228,7 @@ def find_root(func,
     i = 0
     x0, y0 = method_gen.next()
     dx, dx_old, dy = None, None, None
-    print 'before print-info'
     if verbose: print_info(i,x0,dx,y0,dy,dx_old,xunit,yunit)
-    print 'before method_gen loop' ###
     for x,y in method_gen:
         i     += 1
         dx_old = dx
@@ -244,7 +264,13 @@ def test_solve_relation_num(use_numexpr=False):
     x,y = symbols('x,y')
     f = symbols('f',cls=Function)(x,y)
     relation = ln(x*y+f)-f
-    x,y = solve_relation_num(relation, {x:2,y:1}, f, 1.0, use_numexpr, verbose=True, yabstol=1e-9)
+    subsd = {x:2,y:1}
+    varied = f
+    initial_guess = 1.0
+    x, y = solve_relation_num(relation, subsd, varied,
+			     initial_guess, use_numexpr,
+			     verbose=True, yabstol=1e-9)
+
     assert abs(x-1.14619322062) < 1e-8
 
     x,y = symbols('x,y')
@@ -259,6 +285,7 @@ def solve_relation_for_derivatives(rel,
 				   func,  # Function which to solve for (incl. derivs)
 				   initial_guess_func_val,
 				   diff_wrt={},
+				   diff_wrt_map={},
 				   **kwargs
 				   ):
     """
@@ -326,7 +353,7 @@ def solve_relation_for_derivatives(rel,
 		candidate_dict = dict(parent_sig)
 		candidate_dict[candidate] += 1
                 if candidate_dict == dict(signature):
-		    new_order_var = candidate
+		    new_order_var = candidate#diff_wrt_map[candidate]
 	    if new_order_var == None: raise ValueError('The varible was not correctly determined')
 	    if subsd[new_order_var] != 0:
 		h = subsd[new_order_var]*1e-1
@@ -336,9 +363,6 @@ def solve_relation_for_derivatives(rel,
 	    subsd_ph[new_order_var] += h
             initial_guess = get_unit(initial_guess_func_val)*(drel[parent_sig].subs(subsd_ph)-drel[parent_sig].subs(subsd))/h
 	    kwargs.update({'xunit':get_unit(initial_guess)})
-	    print initial_guess
-	    print subsd
-
         deriv_val[signature], err_deriv_val[signature] = solve_relation_num(
 	                                          drel[signature],
                                                   subsd,
@@ -351,25 +375,33 @@ def solve_relation_for_derivatives(rel,
     return deriv_val, err_deriv_val
 
 
-def test_solve_realtion_for_derivatives():
+def test_solve_relation_for_derivatives():
     from sympy import symbols, Function, ln
 
-    x, y = symbols('x,y')
-    f = symbols('f',cls=Function)(x,y)
+    x, y = symbols('x, y')
+    f = symbols('f', cls=Function)(x, y)
     relation = ln(x*y+f)-f
-    df,df_err = solve_relation_for_derivatives(relation, {x:2,y:1}, f, 1.0, {x:2,y:1}, verbose=True, abstol=1e-8)
-    assert abs(df[((x,1),(y,0))]-0.46594127238) < 1e-8
-    assert abs(df[((x,0),(y,1))]-0.9318825447699826) < 1e-8
+    subsd = {x:2,y:1}
+    diff_wrt = {x:2,y:1}
+    #diff_wrt_map = {x_arg: x, y_arg: y}
+    df, df_err = solve_relation_for_derivatives(relation, {x:2,y:1},
+						f, 1.0, diff_wrt,
+						#diff_wrt_map,
+						verbose=True,
+						abstol=1e-8)
+    assert abs(df[((x,1),(y,0))]-0.46594127238)       < 1e-8
+    assert abs(df[((x,0),(y,1))]-0.9318825447699826)  < 1e-8
     assert abs(df[((x,1),(y,1))]+0.17057414955751987) < 1e-8
     assert abs(df[((x,2),(y,1))]-0.37120710736327495) < 1e-8
 
     x, y = symbols('x, y')
-    g = symbols('g', cls=Function)(x,y)
+    #x_arg, y_arg = symbols('x_arg, y_arg')
+    g = symbols('g', cls=Function)(x,y)#(x_arg, y_arg)
     relation = x**2+y**2-g # Circle
     subsd = {x: 1.0, y: 0.0}
     initial_guess_func_val = 0.5
     diff_wrt = {x: 1}
     dg, dg_err = solve_relation_for_derivatives(relation, subsd, g, initial_guess_func_val, diff_wrt, verbose=True, abstol=1e-7)
-    assert abs(dg[((x,1),)]-2.0) < 1e-7
+    assert abs(dg[((x, 1),)]-2.0) < 1e-7
 
 

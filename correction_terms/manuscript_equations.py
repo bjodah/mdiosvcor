@@ -37,9 +37,9 @@ from sympy.physics import units
 # Sympy does not support PyPI package "Quantities"
 from collections import namedtuple, defaultdict
 
-from water_permittivity import eps
+from water_permittivity import eps, get_water_eps
 from IAPWS95_density import expl_pressure_relation, get_water_density
-from manuscript_constants import P0, Tdash, eps0, alpha_LS, M_W, N_A     
+from manuscript_constants import P0, Tdash, eps0, alpha_LS, M_W, N_A
 
 
 # Global variables (only LS scheme implemented)
@@ -65,7 +65,7 @@ TayParams = namedtuple('TayParams', ['f0', 'dfdP', 'dfdT', 'd2fdP2', 'd2fdPdT', 
 
 # From Table 3 p. 43 in submitted manuscript
 
-rho_S_prime = get_water_density
+rho_S_prime = #get_water_density
 
 eps_prime = eps * 66.6/get_water_eps(P0,Tdash)
 
@@ -109,7 +109,7 @@ q_I_val = {'sod':1,
 R_I_val = {'sod':R_I_sod, # Ionic radius for each ion
        'cls':R_I_cls} # mean value of Goldschmidt radius and
 
-q_I, R_I = symbols('q_I, R_I')
+q_I, R_I, N_W = symbols('q_I, R_I, N_W')
 
 # Dependent parameters
 # Computational box length as CALCULATED Eq.37
@@ -166,3 +166,8 @@ def get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,cor_type="all"):
                                              q_I: q_I_val[ion],
                                              R_I: R_I_val[ion],
                                              })
+
+
+def test_get_Delta_Y_cor_LS():
+    Y='G'; P_val=P0; T_val = Tdash; N_W_val=1024; ion='sod'
+    print get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,cor_type="all")
