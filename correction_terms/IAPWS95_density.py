@@ -32,7 +32,6 @@ import IAPWS95_constants as const
 # Variables
 P_	= Symbol('P')   # Pressure (Intensive state variable)
 T_	= Symbol('T')   # Temperature (Intensive state variable)
-#rho_	= Symbol('rho') # Denisty (Intensive state variable)
 rho_     = symbols('rho', cls=Function)
 rho_     = rho_(P_,T_)
 
@@ -109,12 +108,7 @@ dphi__rddelta_ = diff(phi__r_, delta_)
 # Different relations can be used to numerically find thermodynamic
 # properties.
 
-val_R = const.ref_variables['R']
-val_rho_c = const.ref_variables['rho_c']
-val_T_c   = const.ref_variables['T_c']
-
-
-def get_explicit(relation, unitless=True):
+def get_explicit(relation, unitless=False):
     """
     Turns a relation in delta and tay into a
     relation in rho and T
@@ -124,6 +118,9 @@ def get_explicit(relation, unitless=True):
     """
     const.ref_variables.return_unitless = unitless
 
+    val_rho_c = const.ref_variables['rho_c']
+    val_T_c   = const.ref_variables['T_c']
+
     expl_delta_ = rho_/val_rho_c # Below eq 6.4 on p. 429 (p. 43 in PDF)
     expl_tau_   = val_T_c/T_     # Below eq 6.4 on p. 429 (p. 43 in PDF)
     expl_subs  = {delta_: expl_delta_, tau_: expl_tau_}
@@ -132,90 +129,140 @@ def get_explicit(relation, unitless=True):
 
 # Pressure relation, Table 6.3, p. 431 (p. 45 in PDF)
 
-pressure_relation      = P_/(rho_*val_R*T_) - 1 - delta_*dphi__rddelta_
-expl_pressure_relation = get_explicit(pressure_relation)
+def get_pressure_relation(unitless=False):
+
+    const.ref_variables.return_unitless = unitless
+
+    val_R = const.ref_variables['R']
+
+    return P_/(rho_*val_R*T_) - 1 - delta_*dphi__rddelta_
+
+def get_expl_pressure_relation(unitless=False):
+    return get_explicit(get_pressure_relation(unitless), unitless)
 
 
-def get_water_density(val_P=None, val_T=None, val_rho0=None, verbose = False, abstol=1e-9):
+# def get_water_density(val_P=None, val_T=None, val_rho0=None, verbose = False, abstol=1e-9, unitless=False):
+#     """
+#     This work only uses the density of water, therefore a helper
+#     function is definied for accessing density at a given pressure
+#     and termperature
+#     """
+
+#     if not val_P:  val_P = val_P0
+#     if not val_T:  val_T = val_Tdash
+#     if not val_rho0: val_rho0  = sympify(1000.00) * density_units
+
+#     find_root_kwargs = {'dx0':     -1.0,
+#                         'maxiter': 25,
+# 			'xabstol': abstol,
+# 			'verbose': verbose}
+
+#     if not unitless:
+# 	find_root_kwargs['dx0'] *= density_units
+# 	find_root_kwargs['xunit'] = density_units
+
+#     # If P is without unit and we want units, assume Pascal:
+#     try:
+#         float(val_P/units.pascal)
+#     except:
+# 	if not unitless: val_P *= units.pascal
+#     else:
+# 	if unitless: val_P /= units.pascal
+
+
+#     # If T is without unit and we want units, assume Kelvin:
+#     try:
+#         float(val_T/units.kelvin)
+#     except:
+# 	if not unitless: val_T *= units.kelvin
+#     else:
+# 	if unitless: val_T /= units.kelvin
+
+#     # If rho0 is without unit, assume units.kg/units.meter**3:
+#     try:
+# 	float(val_rho0/density_units)
+#     except:
+# 	if verbose: print 'Assuming density entered in kg / m^3'
+# 	if not unitless: val_rho0 *= density_units
+#     else:
+# 	if unitless: val_rho0 /= density_units
+
+#     subsd = {P_: val_P, T_: val_T}
+
+#     return solve_relation_num(get_expl_pressure_relation(unitless),
+# 			      subsd,
+# 			      rho_, val_rho0,
+# 			      **find_root_kwargs)
+
+def get_water_density(val_P=None, val_T=None, val_rho0=None, verbose = False, abstol=1e-9, unitless=False, use_numexpr=False):
     """
     This work only uses the density of water, therefore a helper
     function is definied for accessing density at a given pressure
     and termperature
     """
+    rho_val, rho_err = get_water_density_derivatives(0, 0, val_T, val_rho0,
+						     verbose, abstol,
+						     unitless, use_numexpr)
+    return rho_val[((P_,0),(T_,0))], rho_err[((P_,0),(T_,0))]
 
-    if not val_P:  val_P = val_P0
-    if not val_T:  val_T = val_Tdash
-    if not val_rho0: val_rho0  = sympify(1000.00) * density_units
-
-    find_root_kwargs = {'dx0':    -1.0 * density_units,
-			'xunit':  density_units,
-                        'maxiter': 25,
-			'xabstol': abstol,
-			'verbose': verbose}
-
-    # If P is without unit, assume Pascal:
-    try:
-	float(val_P/units.pascal)
-    except:
-	if verbose: print 'Assumeing pressure eneterd in Pascal'
-	val_P *= units.pascal
-
-    # If T is without unit, assume Kelvin:
-    try:
-	float(val_T/units.kelvin)
-    except:
-	if verbose: print 'Assumeing temperature eneterd in Kelvin'
-	val_T *= units.kelvin
-
-    # If rho0 is without unit, assume units.kg/units.meter**3:
-    try:
-	float(val_rho0/(units.kg/units.meter**3))
-    except:
-	if verbose: print 'Assuming density entered in kg / m^3'
-	val_rho0 *= units.kg/units.meter**3
-
-
-    return solve_relation_num(expl_pressure_relation,
-				     {P_: val_P, T_: val_T},
-				     rho_, val_rho0,
-				     **find_root_kwargs)
 
 def test_get_water_density(verbose=False):
-    assert abs(get_unitless(get_water_density(verbose=verbose)) - 997.05) < 1e-2
+    rho, drho = get_water_density(verbose=verbose)
+    assert abs(get_unitless(rho) - 997.05) < 1e-2
 
-def get_water_density_derivatives(P_order,T_order, val_P=None, val_T=None, verbose = False, abstol=1e-9):
+def get_water_density_derivatives(P_order,T_order, val_P=None, val_T=None, val_rho0=None, verbose = False, abstol=1e-9, unitless=False, use_numexpr=False):
     if not val_P: val_P = sympify(101.3e3) * units.pascal
     if not val_T: val_T = sympify(298.15)  * units.kelvin
+    if not val_rho0: val_rho0  = sympify(1000.00) * density_units
 
-    # If P is without unit, assume Pascal:
+    # If P is without unit and we want units, assume Pascal:
     try:
         float(val_P/units.pascal)
     except:
-        val_P *= units.pascal
+	if not unitless: val_P *= units.pascal
+    else:
+	if unitless: val_P /= units.pascal
 
-    # If T is without unit, assume Kelvin:
+
+    # If T is without unit and we want units, assume Kelvin:
     try:
         float(val_T/units.kelvin)
     except:
-        val_T *= units.kelvin
+	if not unitless: val_T *= units.kelvin
+    else:
+	if unitless: val_T /= units.kelvin
+
+    # If rho0 is without unit, assume units.kg/units.meter**3:
+    try:
+	float(val_rho0/density_units)
+    except:
+	if verbose: print 'Assuming density entered in kg / m^3'
+	if not unitless: val_rho0 *= density_units
+    else:
+	if unitless: val_rho0 /= density_units
+
 
     diff_wrt = {P_: P_order, T_: T_order}
 
-    rho0=sympify(1000.00) * units.kg/units.meter**3
-
-    find_root_kwargs = {'xunit': density_units,
+    find_root_kwargs = {'dx0':     -1.0,
 			'xabstol': abstol,
 			'verbose': verbose}
+    if not unitless:
+	find_root_kwargs['dx0'] *= density_units
+	#find_root_kwargs['xunit'] = density_units
 
-    return solve_relation_for_derivatives(expl_pressure_relation,
+
+    val, err = solve_relation_for_derivatives(get_expl_pressure_relation(unitless),
 					  {P_: val_P, T_: val_T},
-					  rho_, rho0, diff_wrt,
+					  rho_, val_rho0, diff_wrt, use_numexpr,
 					  **find_root_kwargs)
+
+    return val, err
 
 def test_get_water_density_derivatives(verbose=False):
     drho, drho_err = get_water_density_derivatives(2,2,
 						   verbose=verbose)
-    assert abs(drho[((P,1),(T,1))]-1.1913e-9)<1e-3
+    assert abs(drho[((P_,1),(T_,1))]-1.1913e-9)<1e-3
 
 
 

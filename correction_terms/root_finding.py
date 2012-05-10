@@ -58,6 +58,8 @@ def test_get_cb_from_rel():
     cb = get_cb_from_rel(relation, subsd, f)
     assert cb(1.14619322062) < 1e-12
 
+    cb_numexpr = get_cb_from_rel(relation,subsd,f,use_numexpr=True)
+    assert cb(1.14619322062) < 1e-12
 
 def secant_generator(f, x0, dx0):
     """
@@ -243,20 +245,21 @@ def find_root(func,
     if return_intermediate_results:
         return interm_res
     else:
-	return x,dx
+	return x, dx
 
 def solve_relation_num(rel,
 		       subsd,
 		       varied,
 		       initial_guess,
 		       use_numexpr=False,
+		       verbose=False,
 		       **kwargs
 		       ):
     """
     Solves non-linear (sympy) equation numerically
     """
     f0 = get_cb_from_rel(rel, subsd, varied, use_numexpr)
-    return find_root(f0, initial_guess, **kwargs)
+    return find_root(f0, initial_guess, verbose=verbose, **kwargs)
 
 
 def test_solve_relation_num(use_numexpr=False):
@@ -286,6 +289,8 @@ def solve_relation_for_derivatives(rel,
 				   initial_guess_func_val,
 				   diff_wrt={},
 				   diff_wrt_map={},
+				   use_numexpr=False,
+				   verbose=False,
 				   **kwargs
 				   ):
     """
@@ -332,6 +337,7 @@ def solve_relation_for_derivatives(rel,
         if all(v==0 for k,v in diff_step.iteritems()):
             # Not a derivative but the function itself
             initial_guess = initial_guess_func_val
+	    kwargs.update({'xunit':get_unit(initial_guess)})
         else:
             # There exist a 'parent' derivative from which we can
             # extract an initial guess for "solve_relation_num"
@@ -359,17 +365,23 @@ def solve_relation_for_derivatives(rel,
 		h = subsd[new_order_var]*1e-1
 	    else:
 		h = 1e-6*get_unit(subsd[new_order_var]) # Arbitrary step
+	    if 'dx0' in kwargs: kwargs.pop('dx0')
 	    subsd_ph = dict(subsd.items()) # Deepcopy imitation
 	    subsd_ph[new_order_var] += h
-            initial_guess = get_unit(initial_guess_func_val)*(drel[parent_sig].subs(subsd_ph)-drel[parent_sig].subs(subsd))/h
+            initial_guess = (drel[parent_sig].subs(subsd_ph)-drel[parent_sig].subs(subsd))/h*get_unit(initial_guess_func_val)
 	    kwargs.update({'xunit':get_unit(initial_guess)})
+
+	if verbose: print 'Determining:', deriv[signature]
+	if verbose: print 'initial_guess', initial_guess
         deriv_val[signature], err_deriv_val[signature] = solve_relation_num(
-	                                          drel[signature],
-                                                  subsd,
-                                                  deriv[signature],
-                                                  initial_guess,
-                                                  **kwargs
-                                                  )
+	    drel[signature],
+	    subsd,
+	    deriv[signature],
+	    initial_guess,
+	    use_numexpr,
+	    verbose,
+	    **kwargs
+	    )
         subsd.update({deriv[signature]: deriv_val[signature]})
 
     return deriv_val, err_deriv_val

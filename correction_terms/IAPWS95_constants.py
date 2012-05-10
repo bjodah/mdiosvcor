@@ -35,9 +35,9 @@ class ParameterStore(object):
         else:
             return self._parameters[item]
 
-ref_variables = ParameterStore({'T_c': sympify(647.096) * units.kelvin,
-                                     'rho_c': sympify(322.0) * units.kg / units.meter**3,
-                                     'R': sympify(461.51805) * units.joule / units.kelvin / units.kg})
+ref_variables = ParameterStore({'T_c'	: sympify(647.096) * units.kelvin,
+				'rho_c'	: sympify(322.0) * units.kg / units.meter**3,
+				'R'	: sympify(461.51805) * units.joule / units.kelvin / units.kg})
 
 standard_state_variables = ParameterStore({'P0'    : sympify(101.325e3)*units.pascal,
                                            'Tdash' :	sympify(298.15)*units.kelvin
@@ -89,17 +89,17 @@ _d =  [0,
           4, 4, 5, 6,  6,  7,  9,  9,  9, 9, 9, 10, 10, 12,
           3, 4, 4, 5, 14,  3,  6,  6,  6, 3, 3,  3]
 _t =  [0,
-          -0.5, 0.875,  1.0,  0.5,  0.75, 0.375,  1.0,  4.0,  6.0, 12.0,  1.0,
-           5.0, 4.0  ,  2.0, 13.0,  9.0 , 3.0  ,  4.0, 11.0,  4.0, 13.0,  1.0,
-           7.0, 1.0  ,  9.0, 10.0, 10.0 , 3.0  ,  7.0, 10.0, 10.0,  6.0, 10.0,
-          10.0, 1.0  ,  2.0,  3.0,  4.0 , 8.0  ,  6.0,  9.0,  8.0, 16.0, 22.0,
-          23.0,23.0  , 10.0, 50.0, 44.0, 46.0  , 50.0,  0.0,  1.0,  4.0]
+          -0.5, 0.875,  1.0,  0.5,  0.75, 0.375,  1,  4,  6, 12,  1,
+           5, 4  ,  2, 13,  9 , 3  ,  4, 11,  4, 13,  1,
+           7, 1  ,  9, 10, 10 , 3  ,  7, 10, 10,  6, 10,
+          10, 1  ,  2,  3,  4 , 8  ,  6,  9,  8, 16, 22,
+          23,23  , 10, 50, 44, 46  , 50,  0,  1,  4]
 
 #offset constants, no point in creating giant nearly empty lists
-_alpha	 = {52: 20.0,  53:  20.0,  54:  20.0}
-_beta	 = {52: 150.0, 53: 150.0,  54: 250.0, 55:0.3, 56:0.3}
-_gamma	 = {52: 1.21,  53:   1.21, 54:   1.25}
-_epsilon = {52: 1.0,   53:   1.0,  54:   1.0 }
+_alpha	 = {52	: 20,   53:  20,    54:  20}
+_beta	 = {52	: 150,  53: 150,    54: 250, 55:0.3, 56:0.3}
+_gamma	 = {52	: 1.21, 53:   1.21, 54:   1.25}
+_epsilon = {52	: 1,    53:   1,    54:   1 }
 
 _a		 = {55:   3.5,   56:   3.5}
 _b		 = {55:   0.85,  56:   0.95}
