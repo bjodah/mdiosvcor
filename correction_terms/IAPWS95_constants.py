@@ -6,42 +6,28 @@
 # Author: Björn Dahlgren
 # Implemented for use in research project in the IGC group at ETH
 
-# To the extent possible under law, Bjoern Dahlgren has waived all
-# copyright and related or neighboring rights to this work.
+# This work is open source and is released under the
+# 2-clause BSD license (see LICENSE.txt for further information)
 
-from sympy_helpers import get_unit, get_unitless
+
 from sympy import sympify
 from sympy.physics import units
+
+from prj_helpers import ParameterStore
+
 # Constants used in the master equation
-class ParameterStore(object):
-    """
 
-    """
+density_units = units.joule / units.kelvin / units.kg
 
-    def __init__(self, parameters, return_unitless=False):
-        """
+ref_variables = ParameterStore(
+    {'T_c'	: sympify(647.096) * units.kelvin,
+     'rho_c'	: sympify(322.0) * units.kg / units.meter**3,
+     'R'	: sympify(461.51805) * density_units})
 
-        Arguments:
-        - `unitless`: Default
-        """
-        self._parameters = parameters
-        self.return_unitless = return_unitless
-
-    def keys(self): return self._parameters.keys()
-
-    def __getitem__(self, item):
-        if self.return_unitless:
-            return get_unitless(self._parameters[item])
-        else:
-            return self._parameters[item]
-
-ref_variables = ParameterStore({'T_c'	: sympify(647.096) * units.kelvin,
-				'rho_c'	: sympify(322.0) * units.kg / units.meter**3,
-				'R'	: sympify(461.51805) * units.joule / units.kelvin / units.kg})
-
-standard_state_variables = ParameterStore({'P0'    : sympify(101.325e3)*units.pascal,
-                                           'Tdash' :	sympify(298.15)*units.kelvin
-                                           })
+standard_state_variables = ParameterStore(
+    {'P0'    : sympify(101.325e3)*units.pascal,
+     'Tdash' : sympify(298.15)*units.kelvin
+     })
 
 
 _n0 = [0.0,

@@ -11,13 +11,13 @@
 # Author: Björn Dahlgren
 # Implemented for use in research project in the IGC group at ETH
 
-# To the extent possible under law, Bjoern Dahlgren has waived all
-# copyright and related or neighboring rights to this work.
+# This work is open source and is released under the
+# 2-clause BSD license (see LICENSE.txt for further information)
 
 
 from functools import reduce
 from operator import and_, mul
-from sympy_helpers import get_unit
+from prj_helpers import get_unit
 
 try:
     import numexpr as ne

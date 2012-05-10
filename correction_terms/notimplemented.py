@@ -1,9 +1,72 @@
+
 # Entities below are currently not used. But are kept for possible
-# future reuse of the code and constants
+# future reuse of the code and constants. This is more or less a
+# trash can.
 # ==================================================================
 # ==================================================================
 
 
+# Code for handling unitless evaluation of taylor expansion
+
+TayParams = namedtuple('TayParams', ['f0', 'dfdP', 'dfdT', 'd2fdP2', 'd2fdPdT', 'd2fdT2'])
+
+def TayExpr(x, y, f0_val, dfdx_val, dfdy_val,
+	    d2fdx2_val, d2fdxdy_val, d2fdy2_val,
+	    x0=0.0, y0=0.0):
+    """
+    Returns a 2nd order Taylor expansion expression
+    of a single valued function of two variables (x,y).
+    It is built from derivative values and x0.
+    """
+    f0,dfdx,dfdy,d2fdx2,d2fdxdy,d2fdy2 = \
+		  symbols('f0 dfdx dfdy d2fdx2 d2fdxdy d2fdy2')
+    return f0 + dfdx*(x-x0) + dfdy*(y-y0) + \
+       1/2*(d2fdx2*(x-x0)**2 + \
+	       2*d2fdxdy*(x-x0)*(y-y0) + \
+	       d2fdy2*(y-y0)**2)
+
+class TayExprFactory(object):
+    """
+
+    """
+
+    def __init__(self, f0_val, dfdx_val, dfdy_val,
+	    d2fdx2_val, d2fdxdy_val, d2fdy2_val,
+	    x0=0.0, y0=0.0, return_unitless=False):
+        """
+
+        """
+        self._parameters = {
+	    'f0_val'	  : f0_val,
+	    'dfdx_val'	  : dfdx_val,
+	    'dfdy_val'	  : dfdy_val,
+	    'd2fdx2_val'  : d2fdx2_val,
+	    'd2fdxdy_val' : d2fdxdy_val,
+	    'd2fdy2_val'  : d2fdy2_val,
+	    'x0'	  : x0,
+	    'y0'	  : y0,
+	    }
+        self.return_unitless = return_unitless
+
+    def keys(self): return self._parameters.keys()
+
+    def __getitem__(self, item):
+        if self.return_unitless:
+            return get_unitless(self._parameters[item])
+        else:
+            return self._parameters[item]
+
+    def __call__(self, return_unitless=None):
+	if not return_unitleess:
+	    return_unitless = self.return_unitless
+	return TayExpr(**self)
+
+
+
+
+
+# IAPWS 95 specific
+############################################################
 
 # Other constants never used explicitly
 # =====================================

@@ -10,17 +10,21 @@
 #    General and Scientific Use.” Journal of Physical and Chemical
 #    Reference Data 31, no. 2 (June 7, 2002): 387–535.
 
+# The scripts requires Python 2.7.x, Sympy
+
 # Author: Björn Dahlgren
 # Implemented for use in research project in the IGC group at ETH
 
-# To the extent possible under law, Bjoern Dahlgren has waived all
-# copyright and related or neighboring rights to this work.
+# This work is open source and is released under the 2-clause BSD license
+# (see LICENSE.txt for further information)
 
 from __future__ import division
+import argparse
+
 from sympy import *
 from sympy.physics import units
 from root_finding import find_root, solve_relation_num, solve_relation_for_derivatives
-from sympy_helpers import get_sympified, get_unitless
+from prj_helpers import get_sympified, get_unitless, memoize
 
 
 import IAPWS95_constants as const
@@ -137,6 +141,7 @@ def get_pressure_relation(unitless=False):
 
     return P_/(rho_*val_R*T_) - 1 - delta_*dphi__rddelta_
 
+
 def get_expl_pressure_relation(unitless=False):
     return get_explicit(get_pressure_relation(unitless), unitless)
 
@@ -206,10 +211,11 @@ def get_water_density(val_P=None, val_T=None, val_rho0=None, verbose = False, ab
     return rho_val[((P_,0),(T_,0))], rho_err[((P_,0),(T_,0))]
 
 
-def test_get_water_density(verbose=False):
-    rho, drho = get_water_density(verbose=verbose)
+def test_get_water_density(verbose=False, unitless=False, use_numexpr=False):
+    rho, drho = get_water_density(verbose=verbose,unitless=unitless,use_numexpr=use_numexpr)
     assert abs(get_unitless(rho) - 997.05) < 1e-2
 
+@memoize
 def get_water_density_derivatives(P_order,T_order, val_P=None, val_T=None, val_rho0=None, verbose = False, abstol=1e-9, unitless=False, use_numexpr=False):
     if not val_P: val_P = sympify(101.3e3) * units.pascal
     if not val_T: val_T = sympify(298.15)  * units.kelvin
@@ -259,10 +265,22 @@ def get_water_density_derivatives(P_order,T_order, val_P=None, val_T=None, val_r
 
     return val, err
 
-def test_get_water_density_derivatives(verbose=False):
+def test_get_water_density_derivatives(verbose=False, unitless=False, use_numexpr=False):
     drho, drho_err = get_water_density_derivatives(2,2,
-						   verbose=verbose)
-    assert abs(drho[((P_,1),(T_,1))]-1.1913e-9)<1e-3
+		       verbose=verbose,
+		       unitless=unitless,
+		       use_numexpr=use_numexpr)
+    val = drho[((P_,1),(T_,1))]
+    if not unitless:
+	val = get_unitless(val)
+    assert abs(val-1.1913e-9)<1e-3
 
 
 
+if __name__ == '__main__':
+    parser = argparse.Parser()
+    # P, T
+    # derivatives, order
+    # verbose
+    # (unitless)
+    # (use_numexpr)

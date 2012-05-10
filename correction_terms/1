@@ -1,3 +1,0 @@
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-AttributeError: 'module' object has no attribute 'test_solve_rel_num'

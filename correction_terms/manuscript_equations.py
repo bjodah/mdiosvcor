@@ -1,45 +1,51 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Solvation free energy correction terms for MD simulation of ionic solvation
-# Program for calculating the correction terms applied in the publication:
+# Program for calculating the correction terms applied in
+# the publication:
 #
 #    Björn Dahlgren, Maria M. Reif, Philippe H. Hünenberger & Niels Hansen
 #    "Calculation of derivative thermodynamic hydration and aqueous partial
 #    molar properties of ions based on atomistic simulations"
 #    J. Chem. Theory Comput.
 #
+# The correction terms are to be applied to thermodynamic solvation parameters and partial molar variables determined by MD simulation.
+
 # Latest version is available at github.com/bjodah/iosv
 
 # Author: Björn Dahlgren
 # Email (@gmail.com): bjodah
 # Implemented for use in research project in the IGC group at ETH
 
-# To the extent possible under law, Bjoern Dahlgren has waived all
-# copyright and related or neighboring rights to this work.
-# However, if you directly use the code in your own research, please
+# If you make use the code in your own research, please
 # cite the article referenced above.
 
 # Any comments and/or imporvements of the code are greatly appreciated.
 # Improvements are best done by making a pull request at github
 # It is also the place to raise issues and filing bug reports.
 
-
 # Possible future extensions (feel free to write them and make a pull
 # request at github):
 #   *  Implement expressions not only for LS but also for CT
 
-from __future__ import division # 1/3 returns 0.333333 ... instead of 0
+# This work is open source and is released under the
+# 2-clause BSD license (see LICENSE.txt for further information)
 
+from __future__ import division # 1/3 returns 0.333333 ... instead of 0
+from collections import defaultdict
+from functools import reduce # For Python 3 compability
+from operator import add
+import argparse
 from sympy import *
 #from sympy import mpmath
 from sympy.physics import units
 # Sympy does not support PyPI package "Quantities"
-from collections import namedtuple, defaultdict
 
 from water_permittivity import eps, get_water_eps
-from IAPWS95_density import expl_pressure_relation, get_water_density, get_water_density_derivatives
-from manuscript_constants import P0, Tdash, eps0, alpha_LS, M_W, N_A, e
+from IAPWS95_density import get_water_density_derivatives
+from manuscript_constants import P, T, P0, Tdash, eps0, alpha_LS, \
+     M_W, N_A, gamma_prime_val, chi_prime, chi_tilde_minus_prime, \
+     q_I_val, R_I_val
 
 
 # Global variables (only LS scheme implemented)
@@ -48,72 +54,17 @@ Y_TYPES   = ('G', 'H', 'S', 'CP', 'V', 'KT', 'AP')
 # Ions (only sodium and chloride ions implemented)
 IONS = ('sod','cls')
 
-# Variables
-P  = Symbol('P') # Pressure (Intensive state variable)
-T  = Symbol('T') # Temperature (Intensive state variable)
+# Epsilon' is scaled down version of real water:
+eps_prime = eps * 66.6/get_water_eps(P0,Tdash)
 
 
-
-# Taylor expansion of P and T dependent function to second order
-f0,dfdP,dfdT,d2fdP2,d2fdPdT,d2fdT2 = \
-    symbols('f0 dfdP dfdT d2fdP2 d2fdPdT d2fdT2')
-f_tay2 = f0 + dfdP*(P-P0) + dfdT*(T-Tdash) + \
-       1/2*(d2fdP2*(P-P0)**2+2*d2fdPdT*(P-P0)*(T-Tdash)+d2fdT2*(T-Tdash)**2)
-
-# Numerical values for parameters:
-TayParams = namedtuple('TayParams', ['f0', 'dfdP', 'dfdT', 'd2fdP2', 'd2fdPdT', 'd2fdT2'])
-
-# From Table 3 p. 43 in submitted manuscript
 
 rho_prime = symbols('rho_prime', cls=Function)(P,T)
 
 
-eps_prime = eps * 66.6/get_water_eps(P0,Tdash)
-
-R_I_sod_params = TayParams(1.68e-10 * units.meter,
-                           0        * units.meter / units.bar,
-                          -4e-14    * units.meter / units.kelvin,
-                           0        * units.meter / units.bar / units.bar,
-                           0        * units.meter / units.bar / units.kelvin,
-                           0        * units.meter / units.kelvin / units.kelvin)
-R_I_sod = f_tay2.subs(R_I_sod_params._asdict())
-
-R_I_cls_params = TayParams(2.46e-10 * units.meter,
-                           0        * units.meter / units.bar,
-                          -4e-14    * units.meter / units.kelvin,
-                           0        * units.meter / units.bar / units.bar,
-                           0        * units.meter / units.bar / units.kelvin,
-                           0        * units.meter / units.kelvin / units.kelvin)
-R_I_cls = f_tay2.subs(R_I_cls_params._asdict())
-
-chi_prime_params = TayParams(7.3e-1   * units.volt,
-                             0        * units.volt / units.bar,
-                            -4.8e-4   * units.volt / units.kelvin,
-                             0        * units.volt / units.bar / units.bar,
-                             0        * units.volt / units.bar / units.kelvin,
-                             0        * units.volt / units.kelvin / units.kelvin)
-chi_prime = f_tay2.subs(chi_prime_params._asdict())
-
-chi_tilde_minus_prime_params = TayParams(-1.1e-10   * units.volt * units.meter,
-                             0        * units.volt * units.meter / units.bar,
-                            -6.72e-14 * units.volt * units.meter / units.kelvin,
-                             0        * units.volt * units.meter / units.bar / units.bar,
-                             0        * units.volt * units.meter / units.bar / units.kelvin,
-                             0        * units.volt * units.meter / units.kelvin / units.kelvin)
-chi_tilde_minus_prime = f_tay2.subs(chi_tilde_minus_prime_params._asdict())
+q_I, R_I, N_W, gamma_prime = symbols('q_I, R_I, N_W, gamma_prime')
 
 
-
-# Ion specific parameters
-q_I_val = {'sod': sympify(1),
-	   'cls': sympify(-1)}
-R_I_val = {'sod': R_I_sod, # Ionic radius for each ion
-	   'cls': R_I_cls} # mean value of Goldschmidt radius and
-
-q_I, R_I, N_W = symbols('q_I, R_I, N_W')
-
-# SPC water parameters
-gamma_prime = 8.2e-3 * e * (1e-9*units.meter)**2 # Page 25 in manuscript
 
 # Dependent parameters
 # Computational box length as CALCULATED Eq.37
@@ -122,10 +73,16 @@ L=(N_W*M_W/N_A/rho_prime+4*pi/3*R_I**3)**(1/3)
 
 # Correction terms appropriate for Lattice summation
 # Eq. 36 p. 17 in submitted manuscript
-Delta_G_LS = {'B':  (8*pi*eps0)*N_A*q_I**2*(1-1/eps_prime)/L*(alpha_LS+4*pi/3*(R_I/L)**2-16*pi**2/45*(R_I/L)**5),
+Delta_G_LS = {'B':  (8*pi*eps0)*N_A*q_I**2* \
+	      (1-1/eps_prime)/L*(alpha_LS+4*pi/3*(R_I/L)**2 - \
+				 16*pi**2/45*(R_I/L)**5),
 	      'C1': -N_A/(6*eps0)*N_W*gamma_prime*q_I/L**3,
-	      'C2': -N_A*q_I*4*pi*R_I**3/3/L**3*(chi_prime+chi_tilde_minus_prime/R_I),
-	      'D':  1/8/pi/eps0*N_A*q_I**2*(1/eps-1/eps_prime)/R_I}
+	      'C2': -N_A*q_I*4*pi*R_I**3/3/L**3 * \
+			(chi_prime+chi_tilde_minus_prime/R_I),
+	      'D':  1/8/pi/eps0*N_A*q_I**2 * \
+				(1/eps-1/eps_prime)/R_I
+	      }
+
 
 # Delta_Y_LS is a dict of dicts:
 Delta_Y_LS	= defaultdict(dict)
@@ -139,21 +96,28 @@ for cor_type, cor_eq in Delta_G_LS.iteritems():
     Delta_Y_LS['KT'][cor_type] = -diff(cor_eq,P,2)
     Delta_Y_LS['AP'][cor_type] = diff(cor_eq,P,T)
 
-def get_rho_subs(P_val, T_val, abstol=1e-9):
+
+def get_rho_subs(P_val, T_val, abstol=1e-9, verbose=False):
     """
     The IAPWS95 expression is implicit and rho must
     be calculated numerically
     """
-
-    P_order = 2
-    T_order = 2
-    return get_water_density_derivatives(P_order, T_order, P_val, T_val, abstol=1e-9)
+    scaling_factor = 968.2/997.05 # See Table 3 on p. 43 in MS
+    if verbose: print "Calculating water density P and T derivatives using IAPWS95..."
+    P_order = 2 # We need up to second derivative wrt to P
+    T_order = 2 # We need up to second derivative wrt to T
+    val, err = get_water_density_derivatives(P_order, T_order, P_val,
+					     T_val, None, verbose, abstol)
+    subs = {}
+    for k,v in val:
+	subs[Derivative(rho_prime, *reduce(add, k))] = v * scaling_factor
+    return subs
 
 
 def test_get_rho_subs():
     print get_rho_subs(P0, Tdash)
 
-def get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,cor_type="all"):
+def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion,cor_type="all",verbose=False):
     """
     Function which returns a correction term of type
     cor_type or a dictionary of all correction terms
@@ -170,21 +134,34 @@ def get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,cor_type="all"):
     Pascal and the temperature is assumed to be in Kelvin.
     """
     assert(cor_type in COR_TYPES or cor_type=="all")
-    assert(ion in ions)
+    assert(ion in IONS)
     assert(Y in Y_TYPES)
 
+    if verbose: print "Calculating for P={}, T={}".format(P_val,T_val)
     if cor_type == "all":
 	result = {}
 	for key in Delta_Y_LS[Y].keys():
-	    result[key] = get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type=key)
+	    result[key] = get_Delta_Y_cor_LS(Y, P_val, T_val,N_W_val,
+					     ion, cor_type=key, verbose=verbose)
 	return result
     else:
-	rho_subs = get_rho_subs(P_val, T_val)
-	subsd = {P: P_val, T: T_val, N_W: N_W_val, q_I: q_I_val[ion], R_I: R_I_val[ion]}
+	if verbose: print "Calculating cor_type: {}".format(cor_type)
+	subsd = {P: P_val, T: T_val, N_W: N_W_val,
+		 q_I: q_I_val[ion], R_I: R_I_val[ion],
+		 gamma_prime: gamma_prime_val}
+	subsd.update(get_rho_subs(P_val, T_val, verbose=verbose))
+	return Delta_Y_LS[Y][cor_type].subs(subsd)
 
-	return Delta_Y_LS[Y][cor_type].subs()
 
-
-def test_get_Delta_Y_cor_LS():
+def test_get_Delta_Y_cor_LS(verbose=False):
     Y='G'; P_val=P0; T_val = Tdash; N_W_val=1024; ion='sod'
-    print get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,cor_type="all")
+    print get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,"all",
+			     verbose=verbose)
+
+if __name__ == '__main__':
+    parser = argparse.Parser()
+    # P, T
+    # derivatives, order
+    # verbose
+    # (unitless)
+    # (use_numexpr)
