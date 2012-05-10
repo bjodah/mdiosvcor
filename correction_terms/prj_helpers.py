@@ -1,6 +1,8 @@
 from sympy import sympify
 from operator import mul
-from functools import reduce
+from functools import reduce, wraps
+
+# TODO: improve pickle_cached memoization to support critical and non_critial arguments, and support *args, **kwargs combinations.
 
 def get_unit(arg):
     from sympy.physics import units
@@ -38,12 +40,29 @@ def memoize(f):
     Decorator to enable caching for computationally heavy functions
     """
     cache={}
+    @wraps(f)
     def helper(*args):
         if args not in cache:
             cache[args]=f(*args)
         return cache[args]
     return helper
 
+
+def pickle_cached(f):
+    import cPickle as pickle
+    import os
+    fname = '.pickle_cached__'+f.__name__
+    if os.path.exists(fname):
+        cache = pickle.load(open(fname,'rb'))
+    else:
+        cache = {}
+    @wraps(f)
+    def helper(*args):
+        if args not in cache:
+            cache[args]=f(*args)
+            pickle.dump(cache, open(fname, 'wb'))
+        return cache[args]
+    return helper
 
 
 class ParameterStore(object):

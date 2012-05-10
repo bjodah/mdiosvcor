@@ -3,3 +3,4 @@ This python package provides routines for calculating the correction terms for s
 This small software package is free software and you may freely modify and redistribute it.
 
 Copyright (c) 2011, 2012 Björn Dahlgren
+

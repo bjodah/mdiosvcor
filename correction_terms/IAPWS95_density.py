@@ -24,7 +24,7 @@ import argparse
 from sympy import *
 from sympy.physics import units
 from root_finding import find_root, solve_relation_num, solve_relation_for_derivatives
-from prj_helpers import get_sympified, get_unitless, memoize
+from prj_helpers import get_sympified, get_unitless, pickle_cached
 
 
 import IAPWS95_constants as const
@@ -215,7 +215,8 @@ def test_get_water_density(verbose=False, unitless=False, use_numexpr=False):
     rho, drho = get_water_density(verbose=verbose,unitless=unitless,use_numexpr=use_numexpr)
     assert abs(get_unitless(rho) - 997.05) < 1e-2
 
-@memoize
+# pickle_cached stores a '.pickle_cached__'+fname file with data for future use
+@pickle_cached
 def get_water_density_derivatives(P_order,T_order, val_P=None, val_T=None, val_rho0=None, verbose = False, abstol=1e-9, unitless=False, use_numexpr=False):
     if not val_P: val_P = sympify(101.3e3) * units.pascal
     if not val_T: val_T = sympify(298.15)  * units.kelvin
@@ -266,10 +267,10 @@ def get_water_density_derivatives(P_order,T_order, val_P=None, val_T=None, val_r
     return val, err
 
 def test_get_water_density_derivatives(verbose=False, unitless=False, use_numexpr=False):
-    drho, drho_err = get_water_density_derivatives(2,2,
-		       verbose=verbose,
-		       unitless=unitless,
-		       use_numexpr=use_numexpr)
+    drho, drho_err = get_water_density_derivatives(2,2, None, None, None,
+						   verbose, 1e-9, unitless,
+						   use_numexpr)
+
     val = drho[((P_,1),(T_,1))]
     if not unitless:
 	val = get_unitless(val)
