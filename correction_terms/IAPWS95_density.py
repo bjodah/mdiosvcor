@@ -183,7 +183,7 @@ def get_water_density(val_P=None, val_T=None, val_rho0=None, verbose = False, ab
 def test_get_water_density(verbose=False):
     assert abs(get_unitless(get_water_density(verbose=verbose)) - 997.05) < 1e-2
 
-def get_water_density_derivatives(diff_wrt, val_P=None, val_T=None, verbose = False, abstol=1e-9):
+def get_water_density_derivatives(P_order,T_order, val_P=None, val_T=None, verbose = False, abstol=1e-9):
     if not val_P: val_P = sympify(101.3e3) * units.pascal
     if not val_T: val_T = sympify(298.15)  * units.kelvin
 
@@ -199,6 +199,7 @@ def get_water_density_derivatives(diff_wrt, val_P=None, val_T=None, verbose = Fa
     except:
         val_T *= units.kelvin
 
+    diff_wrt = {P_: P_order, T_: T_order}
 
     rho0=sympify(1000.00) * units.kg/units.meter**3
 
@@ -207,12 +208,12 @@ def get_water_density_derivatives(diff_wrt, val_P=None, val_T=None, verbose = Fa
 			'verbose': verbose}
 
     return solve_relation_for_derivatives(expl_pressure_relation,
-					  {P: val_P, T: val_T},
-					  rho, rho0, diff_wrt,
+					  {P_: val_P, T_: val_T},
+					  rho_, rho0, diff_wrt,
 					  **find_root_kwargs)
 
 def test_get_water_density_derivatives(verbose=False):
-    drho, drho_err = get_water_density_derivatives({T:2,P:2},
+    drho, drho_err = get_water_density_derivatives(2,2,
 						   verbose=verbose)
     assert abs(drho[((P,1),(T,1))]-1.1913e-9)<1e-3
 

@@ -38,8 +38,8 @@ from sympy.physics import units
 from collections import namedtuple, defaultdict
 
 from water_permittivity import eps, get_water_eps
-from IAPWS95_density import expl_pressure_relation, get_water_density
-from manuscript_constants import P0, Tdash, eps0, alpha_LS, M_W, N_A
+from IAPWS95_density import expl_pressure_relation, get_water_density, get_water_density_derivatives
+from manuscript_constants import P0, Tdash, eps0, alpha_LS, M_W, N_A, e
 
 
 # Global variables (only LS scheme implemented)
@@ -65,7 +65,8 @@ TayParams = namedtuple('TayParams', ['f0', 'dfdP', 'dfdT', 'd2fdP2', 'd2fdPdT', 
 
 # From Table 3 p. 43 in submitted manuscript
 
-rho_S_prime = #get_water_density
+rho_prime = symbols('rho_prime', cls=Function)(P,T)
+
 
 eps_prime = eps * 66.6/get_water_eps(P0,Tdash)
 
@@ -104,27 +105,31 @@ chi_tilde_minus_prime = f_tay2.subs(chi_tilde_minus_prime_params._asdict())
 
 
 # Ion specific parameters
-q_I_val = {'sod':1,
-       'cls':-1}
-R_I_val = {'sod':R_I_sod, # Ionic radius for each ion
-       'cls':R_I_cls} # mean value of Goldschmidt radius and
+q_I_val = {'sod': sympify(1),
+	   'cls': sympify(-1)}
+R_I_val = {'sod': R_I_sod, # Ionic radius for each ion
+	   'cls': R_I_cls} # mean value of Goldschmidt radius and
 
 q_I, R_I, N_W = symbols('q_I, R_I, N_W')
+
+# SPC water parameters
+gamma_prime = 8.2e-3 * e * (1e-9*units.meter)**2 # Page 25 in manuscript
 
 # Dependent parameters
 # Computational box length as CALCULATED Eq.37
 # from density and number of water molecules
-L=(N_W*M_W/N_A/rho_prime(P,T)+4*pi/3*R_I[ion](P,T)**3)**(1/3)
+L=(N_W*M_W/N_A/rho_prime+4*pi/3*R_I**3)**(1/3)
 
 # Correction terms appropriate for Lattice summation
+# Eq. 36 p. 17 in submitted manuscript
 Delta_G_LS = {'B':  (8*pi*eps0)*N_A*q_I**2*(1-1/eps_prime)/L*(alpha_LS+4*pi/3*(R_I/L)**2-16*pi**2/45*(R_I/L)**5),
 	      'C1': -N_A/(6*eps0)*N_W*gamma_prime*q_I/L**3,
-	      'C2': -N_A*q_I[ion]*4*pi*R_I**3/3/L**3*(chi_prime+chi_minus_prime/R_I),
+	      'C2': -N_A*q_I*4*pi*R_I**3/3/L**3*(chi_prime+chi_tilde_minus_prime/R_I),
 	      'D':  1/8/pi/eps0*N_A*q_I**2*(1/eps-1/eps_prime)/R_I}
 
 # Delta_Y_LS is a dict of dicts:
-Delta_Y_LS = DefaultDict(dict)
-Delta_Y_LS = {'G': Delta_G_LS}
+Delta_Y_LS	= defaultdict(dict)
+Delta_Y_LS['G'] = Delta_G_LS
 
 for cor_type, cor_eq in Delta_G_LS.iteritems():
     Delta_Y_LS['H'][cor_type]  = 1 - T*diff(cor_eq,T)
@@ -133,6 +138,20 @@ for cor_type, cor_eq in Delta_G_LS.iteritems():
     Delta_Y_LS['V'][cor_type]  = diff(cor_eq,P)
     Delta_Y_LS['KT'][cor_type] = -diff(cor_eq,P,2)
     Delta_Y_LS['AP'][cor_type] = diff(cor_eq,P,T)
+
+def get_rho_subs(P_val, T_val, abstol=1e-9):
+    """
+    The IAPWS95 expression is implicit and rho must
+    be calculated numerically
+    """
+
+    P_order = 2
+    T_order = 2
+    return get_water_density_derivatives(P_order, T_order, P_val, T_val, abstol=1e-9)
+
+
+def test_get_rho_subs():
+    print get_rho_subs(P0, Tdash)
 
 def get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,cor_type="all"):
     """
@@ -160,12 +179,10 @@ def get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,cor_type="all"):
 	    result[key] = get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type=key)
 	return result
     else:
-	return Delta_Y_LS[Y][cor_type].subs({P: P_val,
-                                             T: T_val,
-                                             N_W: N_W_val,
-                                             q_I: q_I_val[ion],
-                                             R_I: R_I_val[ion],
-                                             })
+	rho_subs = get_rho_subs(P_val, T_val)
+	subsd = {P: P_val, T: T_val, N_W: N_W_val, q_I: q_I_val[ion], R_I: R_I_val[ion]}
+
+	return Delta_Y_LS[Y][cor_type].subs()
 
 
 def test_get_Delta_Y_cor_LS():
