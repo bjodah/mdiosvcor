@@ -1,45 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Program for calculating the correction terms applied in
-# the publication:
-#
-#    Björn Dahlgren, Maria M. Reif, Philippe H. Hünenberger & Niels Hansen
-#    "Calculation of derivative thermodynamic hydration and aqueous partial
-#    molar properties of ions based on atomistic simulations"
-#    J. Chem. Theory Comput.
-#
-# The correction terms are to be applied to thermodynamic solvation parameters and partial molar variables determined by MD simulation.
-
-# Latest version is available at github.com/bjodah/iosv
-
-# Author: Björn Dahlgren
-# Email (@gmail.com): bjodah
-# Implemented for use in research project in the IGC group at ETH
-
-# If you make use the code in your own research, please
-# cite the article referenced above.
-
-# Any comments and/or imporvements of the code are greatly appreciated.
-# Improvements are best done by making a pull request at github
-# It is also the place to raise issues and filing bug reports.
-
-# Possible future extensions (feel free to write them and make a pull
-# request at github):
-#   *  Implement expressions not only for LS but also for CT
-
 # This work is open source and is released under the
 # 2-clause BSD license (see LICENSE.txt for further information)
 
-from __future__ import division # 1/3 returns 0.333333 ... instead of 0
+from __future__ import division     # 1/3 returns 0.333... instead of 0
 from collections import defaultdict
-from functools import reduce # For Python 3 compability
+from functools import reduce        # For Python 3 compability
 from operator import add
-import argparse
+
 from sympy import *
-#from sympy import mpmath
-from sympy.physics import units
-# Sympy does not support PyPI package "Quantities"
+from sympy.physics import units # Sympy does not support
+                                # PyPI package "Quantities"
 
 from water_permittivity import eps, get_water_eps
 from IAPWS95_density import get_water_density_derivatives
@@ -53,21 +25,18 @@ COR_TYPES = ('B','C1','C2','D')
 Y_TYPES   = ('G', 'H', 'S', 'CP', 'V', 'KT', 'AP')
 # Ions (only sodium and chloride ions implemented)
 IONS = ('sod','cls')
+ION_NAMES = {'sod': 'Na+', 'cls': 'Cl-'}
 
 # Epsilon' is scaled down version of real water:
 eps_prime = eps * 66.6/get_water_eps(P0,Tdash)
 
-
-
 rho_prime = symbols('rho_prime', cls=Function)(P,T)
-
 
 q_I, R_I, N_W, gamma_prime = symbols('q_I, R_I, N_W, gamma_prime')
 
 
-
 # Dependent parameters
-# Computational box length as CALCULATED Eq.37
+# Computational box length as CALCULATED in Eq.37
 # from density and number of water molecules
 L=(N_W*M_W/N_A/rho_prime+4*pi/3*R_I**3)**(1/3)
 
@@ -84,11 +53,11 @@ Delta_G_LS = {'B':  (8*pi*eps0)*N_A*q_I**2* \
 	      }
 
 
-# Delta_Y_LS is a dict of dicts:
+# Delta_Y_LS is a dict of dicts, first key is `Y`, second key is cor_type:
 Delta_Y_LS	= defaultdict(dict)
-Delta_Y_LS['G'] = Delta_G_LS
 
 for cor_type, cor_eq in Delta_G_LS.iteritems():
+    Delta_Y_LS['G'][cor_type]  = cor_eq
     Delta_Y_LS['H'][cor_type]  = 1 - T*diff(cor_eq,T)
     Delta_Y_LS['S'][cor_type]  = -diff(cor_eq,T)
     Delta_Y_LS['CP'][cor_type] = -T*diff(cor_eq,T,2)
@@ -117,6 +86,7 @@ def get_rho_subs(P_val, T_val, abstol=1e-9, verbose=False):
 def test_get_rho_subs():
     print get_rho_subs(P0, Tdash)
 
+
 def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion,cor_type="all",verbose=False):
     """
     Function which returns a correction term of type
@@ -133,6 +103,7 @@ def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion,cor_type="all",verbose=Fals
     If no units are provided then the pressure is assumed to be in
     Pascal and the temperature is assumed to be in Kelvin.
     """
+
     assert(cor_type in COR_TYPES or cor_type=="all")
     assert(ion in IONS)
     assert(Y in Y_TYPES)
@@ -158,10 +129,3 @@ def test_get_Delta_Y_cor_LS(verbose=False):
     print get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,"all",
 			     verbose=verbose)
 
-if __name__ == '__main__':
-    parser = argparse.Parser()
-    # P, T
-    # derivatives, order
-    # verbose
-    # (unitless)
-    # (use_numexpr)

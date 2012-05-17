@@ -216,8 +216,13 @@ def test_get_water_density(verbose=False, unitless=False, use_numexpr=False):
     assert abs(get_unitless(rho) - 997.05) < 1e-2
 
 # pickle_cached stores a '.pickle_cached__'+fname file with data for future use
+
+# TODO: Verbose input not suitable when caching
 @pickle_cached
-def get_water_density_derivatives(P_order,T_order, val_P=None, val_T=None, val_rho0=None, verbose = False, abstol=1e-9, unitless=False, use_numexpr=False):
+def get_water_density_derivatives(P_order, T_order,
+				  val_P=None, val_T=None, val_rho0=None,
+				  verbose = False, abstol=1e-9,
+				  unitless=False, use_numexpr=False):
     if not val_P: val_P = sympify(101.3e3) * units.pascal
     if not val_T: val_T = sympify(298.15)  * units.kelvin
     if not val_rho0: val_rho0  = sympify(1000.00) * density_units
@@ -258,17 +263,22 @@ def get_water_density_derivatives(P_order,T_order, val_P=None, val_T=None, val_r
 	find_root_kwargs['dx0'] *= density_units
 	#find_root_kwargs['xunit'] = density_units
 
-
-    val, err = solve_relation_for_derivatives(get_expl_pressure_relation(unitless),
-					  {P_: val_P, T_: val_T},
-					  rho_, val_rho0, diff_wrt, use_numexpr,
-					  **find_root_kwargs)
+    expl_pressure_relation = get_expl_pressure_relation(unitless)
+    val, err = solve_relation_for_derivatives(expl_pressure_relation,
+					      {P_: val_P, T_: val_T},
+					      rho_,
+					      val_rho0,
+					      diff_wrt,
+					      use_numexpr,
+					      **find_root_kwargs)
 
     return val, err
 
-def test_get_water_density_derivatives(verbose=False, unitless=False, use_numexpr=False):
+def test_get_water_density_derivatives(verbose=False,
+				       unitless=False, use_numexpr=False):
     drho, drho_err = get_water_density_derivatives(2,2, None, None, None,
-						   verbose, 1e-9, unitless,
+						   verbose, 1e-9,
+						   unitless,
 						   use_numexpr)
 
     val = drho[((P_,1),(T_,1))]

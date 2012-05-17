@@ -50,17 +50,20 @@ def memoize(f):
 
 def pickle_cached(f):
     import cPickle as pickle
-    import os
+    import os.path
+    from os import environ
+    dirpath = environ.get('PICKLE_CACHE_DIR','.')
     fname = '.pickle_cached__'+f.__name__
-    if os.path.exists(fname):
-        cache = pickle.load(open(fname,'rb'))
+    path = os.path.join(dirpath, fname)
+    if os.path.exists(path):
+        cache = pickle.load(open(path,'rb'))
     else:
         cache = {}
     @wraps(f)
     def helper(*args):
         if args not in cache:
             cache[args]=f(*args)
-            pickle.dump(cache, open(fname, 'wb'))
+            pickle.dump(cache, open(path, 'wb'))
         return cache[args]
     return helper
 
