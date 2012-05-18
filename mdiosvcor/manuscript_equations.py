@@ -110,6 +110,7 @@ def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion,cor_type="all",verbose=Fals
 
     if verbose: print "Calculating for P={}, T={}".format(P_val,T_val)
     if cor_type == "all":
+	if verbose: print "Calculating all correction term types ("+", ".join(COR_TYPES)+")"
 	result = {}
 	for key in Delta_Y_LS[Y].keys():
 	    result[key] = get_Delta_Y_cor_LS(Y, P_val, T_val,N_W_val,
