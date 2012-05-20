@@ -1,12 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Code for implementing common
-# root finding algorithms, implemented
-# with sympy.physics.units compability
-# in mind. (I long for the day sympy
-# interacts well with the PyPI package:
-# "quantities")
+# Code for implementing common root finding algorithms, implemented
+# with sympy.physics.units compability in mind. (I long for the day
+# sympy interacts well with the PyPI package: "quantities")
 
 # Author: Björn Dahlgren
 # Implemented for use in research project in the IGC group at ETH
@@ -17,34 +14,48 @@
 
 from functools import reduce
 from operator import and_, mul
-from prj_helpers import get_unit
+from prj_helpers import get_unit, get_unitless
+from sympy.utilities.autowrap import autowrap
 
 try:
     import numexpr as ne
 except ImportError:
     ne = False
 
-def get_cb_from_rel(rel, subsd, varied, use_numexpr=False):
+def get_cb_from_rel(rel, subsd, varied, use_numexpr=False, unitless=False, bincompile=False):
     """
     Turn a symbolic (sympy) equation into a python callback
     of one variable.
+
+    Some rules of thumb:
+
+    If the callback will be evaluated for large vectors set
+        use_numexpr = True
+
+    If the expression is very complicated and will be called pointwise set
+        bincompile = True
     """
     from sympy import symbols
+    from sympy.abc import x
     # If varied is general function dep. on (x,y) we cannot
     # substitute for x and y without error. Therefore we
     # mask `varied` as dummy and resubstitute it later
     dummy = symbols('_dummy_')
     subsrel = rel.subs({varied:dummy})
     subsrel = subsrel.subs(subsd)
-    subsrel = subsrel.subs({dummy:varied})
-    if use_numexpr:
-	def f0(x):
-	    return ne.evaluate(str(subsrel), {str(varied): x})
+    if bincompile:
+	assert not use_numexpr
+	assert unitless
+	return autowrap(subsrel.subs({dummy:x}))
     else:
-	def f0(x):
-	    return subsrel.subs({varied: x})
-
-    return f0
+	if use_numexpr:
+	    def f0(x):
+		return ne.evaluate(str(subsrel), {str(dummy): x})
+	else:
+	    subsrel = subsrel.subs({dummy:varied})
+	    def f0(x):
+		return subsrel.subs({varied: x})
+	return f0
 
 
 def test_get_cb_from_rel():
@@ -59,7 +70,11 @@ def test_get_cb_from_rel():
     assert cb(1.14619322062) < 1e-12
 
     cb_numexpr = get_cb_from_rel(relation,subsd,f,use_numexpr=True)
-    assert cb(1.14619322062) < 1e-12
+    assert cb_numexpr(1.14619322062) < 1e-12
+
+    cb_autowrap = get_cb_from_rel(relation,subsd,f,bincompile=True,unitless=True)
+    assert cb_autowrap(1.14619322062) < 1e-12
+
 
 def secant_generator(f, x0, dx0):
     """
@@ -146,7 +161,8 @@ def print_info(i,x,dx,y,dy,dx_old, xunit=1.0, yunit=1.0,
     elif i ==1:
         print fmtstr.format(i, x/xunit, dx/xunit, y/yunit, dy/yunit, '-')
     else:
-        print fmtstr.format(i, x/xunit, dx/xunit, y/yunit, dy/yunit, dx/dx_old**2*xunit)
+        print fmtstr.format(i, x/xunit, dx/xunit, y/yunit, dy/yunit,
+			    dx/dx_old**2*xunit)
 
 def find_root(func,
               x0,
@@ -166,16 +182,13 @@ def find_root(func,
         If dfdx is specified, assume that Newtons method is wanted.
         Else assume secant method.
 
-    method choice is stored as a tuple:
-    (callback, args)
-
     TODO: let unit be automatically taken from x0 and func
     """
 
     if preferred_method == "newton" or \
         (not preferred_method and dfdx):
         if verbose: print "Using Newton's method."
-        method = (newton_generator, (func, x0, dfdx))
+        method_cb, method_args = (newton_generator, (func, x0, dfdx))
     elif preferred_method == "secant" or \
         (not preferred_method and not dfdx):
         if verbose: print "Using the secant method."
@@ -186,7 +199,7 @@ def find_root(func,
 	    else:
 		dx0 = 1e-7*xunit
             if verbose: print "Assuming dx0 = {0}".format(dx0)
-        method = (secant_generator, (func, x0, dx0))
+        method_cb, method_args = (secant_generator, (func, x0, dx0))
     else:
         NotImplemented
 
@@ -226,7 +239,7 @@ def find_root(func,
 
 
     # Initialize the generator of chosen method
-    method_gen = method[0](*method[1])
+    method_gen = method_cb(*method_args)
     i = 0
     x0, y0 = method_gen.next()
     dx, dx_old, dy = None, None, None
@@ -251,18 +264,21 @@ def solve_relation_num(rel,
 		       subsd,
 		       varied,
 		       initial_guess,
-		       use_numexpr=False,
+		       use_numexpr=False, # Info to get_cb_from_rel
+		       unitless=False,    # Info to get_cb_from_rel
+		       bincompile=False,  # Info to get_cb_from_rel
 		       verbose=False,
-		       **kwargs
+		       **kwargs # Additional options to find_root
 		       ):
     """
     Solves non-linear (sympy) equation numerically
     """
-    f0 = get_cb_from_rel(rel, subsd, varied, use_numexpr)
+    f0 = get_cb_from_rel(rel, subsd, varied, use_numexpr,
+			 unitless, bincompile)
     return find_root(f0, initial_guess, verbose=verbose, **kwargs)
 
 
-def test_solve_relation_num(use_numexpr=False):
+def test_solve_relation_num(use_numexpr=False, bincompile=False):
     from sympy import symbols, Function, ln
     x,y = symbols('x,y')
     f = symbols('f',cls=Function)(x,y)
@@ -270,8 +286,10 @@ def test_solve_relation_num(use_numexpr=False):
     subsd = {x:2,y:1}
     varied = f
     initial_guess = 1.0
+    unitless = True
     x, y = solve_relation_num(relation, subsd, varied,
 			     initial_guess, use_numexpr,
+			     unitless, bincompile,
 			     verbose=True, yabstol=1e-9)
 
     assert abs(x-1.14619322062) < 1e-8
@@ -286,10 +304,12 @@ def test_solve_relation_num(use_numexpr=False):
 def solve_relation_for_derivatives(rel,
 				   subsd,
 				   func,  # Function which to solve for (incl. derivs)
-				   initial_guess_func_val,
+				   initial_guess_vals,
 				   diff_wrt={},
 				   diff_wrt_map={},
-				   use_numexpr=False,
+				   use_numexpr=False,  # Info to get_cb_from_rel
+				   unitless=False,     # Info to get_cb_from_rel
+				   bincompile=False,   # Info to get_cb_from_rel
 				   verbose=False,
 				   **kwargs
 				   ):
@@ -304,6 +324,9 @@ def solve_relation_for_derivatives(rel,
      rel = ln(x*y+f) - f   (x*y >= 1)
 
      variables = (x,y)
+
+    Ideas for improvements: from iterations use finite difference to
+    generate a better starting guess for next derivative
 
     """
 
@@ -320,6 +343,8 @@ def solve_relation_for_derivatives(rel,
     # Start by differentiating with respect to one variable to first order,
     # then succesively increase order, then switch variable.
     for diff_step in get_dict_combinations_for_diff(diff_wrt):
+	if verbose: print "Solving for derivative with respect to: "+\
+	   str(diff_step)
         # Lets make a signature e.g. ((x,1), (y,1)) corresponds to d2fdxdy
         signature = tuple(diff_step.items()) # We need something hashable
 
@@ -334,13 +359,14 @@ def solve_relation_for_derivatives(rel,
         # using the symbolic derivative deriv[signature] as unknown.
         # But first we need a starting guess.
         #
-        if all(v==0 for k,v in diff_step.iteritems()):
-            # Not a derivative but the function itself
-            initial_guess = initial_guess_func_val
+	if signature in initial_guess_vals:
+            initial_guess = initial_guess_vals[signature]
+	    if verbose: print "Using provided inital guess: ", str(initial_guess)
 	    kwargs.update({'xunit':get_unit(initial_guess)})
         else:
             # There exist a 'parent' derivative from which we can
             # extract an initial guess for "solve_relation_num"
+	    if verbose: print "No initial guess provided for this derivative, using forward difference estimate from one step order derivative: "
             parent_sig = None
             for k,v in diff_step.iteritems():
                 if v > 0:
@@ -361,14 +387,17 @@ def solve_relation_for_derivatives(rel,
                 if candidate_dict == dict(signature):
 		    new_order_var = candidate#diff_wrt_map[candidate]
 	    if new_order_var == None: raise ValueError('The varible was not correctly determined')
-	    if subsd[new_order_var] != 0:
+	    if get_unitless(subsd[new_order_var]) > 1e-12:
 		h = subsd[new_order_var]*1e-1
 	    else:
-		h = 1e-6*get_unit(subsd[new_order_var]) # Arbitrary step
+		h = 1e-6 # Arbitrary step
+		if not unitless: h *= get_unit(subsd[new_order_var])
 	    if 'dx0' in kwargs: kwargs.pop('dx0')
 	    subsd_ph = dict(subsd.items()) # Deepcopy imitation
 	    subsd_ph[new_order_var] += h
-            initial_guess = (drel[parent_sig].subs(subsd_ph)-drel[parent_sig].subs(subsd))/h*get_unit(initial_guess_func_val)
+	    # Forward difference
+            initial_guess = (drel[parent_sig].subs(subsd_ph) - \
+			     drel[parent_sig].subs(subsd)) / h#*get_unit(initial_guess_func_vals[])
 	    kwargs.update({'xunit':get_unit(initial_guess)})
 
 	if verbose: print 'Determining:', deriv[signature]
@@ -379,6 +408,8 @@ def solve_relation_for_derivatives(rel,
 	    deriv[signature],
 	    initial_guess,
 	    use_numexpr,
+	    unitless,
+	    bincompile,
 	    verbose,
 	    **kwargs
 	    )
@@ -397,7 +428,7 @@ def test_solve_relation_for_derivatives():
     diff_wrt = {x:2,y:1}
     #diff_wrt_map = {x_arg: x, y_arg: y}
     df, df_err = solve_relation_for_derivatives(relation, {x:2,y:1},
-						f, 1.0, diff_wrt,
+						f, {((x,0),(y,0)):1.0}, diff_wrt,
 						#diff_wrt_map,
 						verbose=True,
 						abstol=1e-8)
@@ -411,9 +442,9 @@ def test_solve_relation_for_derivatives():
     g = symbols('g', cls=Function)(x,y)#(x_arg, y_arg)
     relation = x**2+y**2-g # Circle
     subsd = {x: 1.0, y: 0.0}
-    initial_guess_func_val = 0.5
+    initial_guess_func_vals = {((x, 0), (y, 0)): 0.5}
     diff_wrt = {x: 1}
-    dg, dg_err = solve_relation_for_derivatives(relation, subsd, g, initial_guess_func_val, diff_wrt, verbose=True, abstol=1e-7)
+    dg, dg_err = solve_relation_for_derivatives(relation, subsd, g, initial_guess_func_vals, diff_wrt, verbose=True, abstol=1e-7)
     assert abs(dg[((x, 1),)]-2.0) < 1e-7
 
 
