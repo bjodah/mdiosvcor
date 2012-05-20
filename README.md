@@ -25,7 +25,7 @@ This package is written in python, i.e. no compilation is required, just execute
 This package relies on:
 
 - [Python](http://python.org) 2.7.x
-- [Sympy](http://sympy.org) to treat algebraic expressions symbolically
+- [Sympy](http://sympy.org) to treat algebraic expressions symbolically (Ubuntu package name: python-sympy)
 
 ## Additional information
 Beyond the core equations used in calculating the correction terms specified in the article above,

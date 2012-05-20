@@ -1,8 +1,11 @@
+import sys
+import cPickle as pickle
+import os
+
 from sympy import sympify
 from operator import mul
 from functools import reduce, wraps
-
-# TODO: improve pickle_cached memoization to support critical and non_critial arguments, and support *args, **kwargs combinations.
+from tempfile import gettempdir
 
 def get_unit(arg):
     """
@@ -39,81 +42,257 @@ def get_sympified(instance):
     else:
 	NotImplemented
 
-
 def memoize(f):
     """
     Decorator to enable caching for computationally heavy functions
     """
     cache={}
     @wraps(f)
-    def helper(*args):
+    def wrapper(*args):
         if args not in cache:
             cache[args]=f(*args)
         return cache[args]
-    return helper
-
-
-def pickle_cached(f):
-    """
-    A more advanced memoization decorator which stores
-    calculated values to file. Both the return value of
-    the function and the output to STDOUT is cached.
-    """
-    import cPickle as pickle
-    import os.path
-    from os import environ
-    from collections import defaultdict
-    dirpath = environ.get('PICKLE_CACHE_DIR', '.')
-    fname = '.pickle_cached__'+f.__name__
-    path = os.path.join(dirpath, fname)
-    if os.path.exists(path):
-        cache = pickle.load(open(path, 'rb'))
-    else:
-        cache = defaultdict(dict)
-    @wraps(f)
-    def wrapper(*args):
-        if args not in cache:
-	    OutputCache = TeeOutputCacher()
-            cache[args]['retval']=f(*args)
-	    cache[args]['stdout']=OutputCache.content
-	    del OutputCache
-            pickle.dump(cache, open(path, 'wb'))
-	else:
-	    print ''.join(cache[args]['stdout']),
-        return cache[args]['retval']
     return wrapper
 
 
-import sys
+class PickleDict(dict):
+    """
+    A dictionary with attribute-style access. It maps attribute access to
+    the real dictionary.
+
+    The cache file must be set before invoking `dump`
+    (or assigning key/value pairs to the instance if autodump is enabled).
+    It can be done after initialization by invoking `set_cache_file`
+
+    The code is largely based on:
+    http://stackoverflow.com/questions/9409045/
+         how-to-create-a-persistant-class-using-pickle-in-python
+
+    TODO: Improve only to write changes to file instead of redumping entire dictionary.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self._autodump = False # In order to dump cache file needs to be initialized
+        super(self.__class__, self).__init__(self, *args, **kwargs)
+
+    def set_cache_file(self, cache_name, cache_dir_path=None,
+                            fname_prefix=None, autoload=True,
+                            autodump=True):
+        """
+        Sets the file path of the pickle file.
+        If `cache_dir_path` is not specified, tempfile.gettempdir will set one.
+        
+        By leaving the kwarg `autoload` at its default (True) will load the
+        pickle file if it exists
+        """
+        self._autodump = autodump
+        if fname_prefix == None:
+            fname_prefix = '.'+self.__class__.__name__+'_'
+        if not cache_dir_path:
+            cache_dir_path = gettempdir()
+        fname = fname_prefix+cache_name
+        self._cache_file = os.path.join(cache_dir_path, fname)
+        if autoload:
+            if os.path.exists(self._cache_file):
+                self.load()
+
+
+    def dump(self):
+        pickle.dump(self, open(self._cache_file, 'wb'))
+
+    def load(self):
+        self.__setstate__(pickle.load(open(self._cache_file, 'rb')).__getstate__())
+
+    def unlink(self):
+        if os.path.exists(self._cache_file): os.unlink(self._cache_file)
+
+    def __getstate__(self):
+        # Only pickle the underlying dict, not the PickleCache instance
+        return self.items()
+
+    def __setstate__(self, items):
+        # When unpickling, we can assume reading an ordinary dictionary
+        # The meta-data which makes the PicklCache instance is already present
+        for key, val in items:
+            self[key] = val
+
+    def __repr__(self):
+        return "%s(%s)" % (self.__class__.__name__, dict.__repr__(self))
+
+    def __setitem__(self, key, value):
+        # Not idempotent, dump data if autodump enabled
+        retval = super(self.__class__, self).__setitem__(key, value)
+        if hasattr(self, '_autodump'):
+            if self._autodump: self.dump()
+        return retval
+
+    def __getitem__(self, name):
+        # Idempotent operation, don't dump even if autodump is enabled
+        return super(self.__class__, self).__getitem__(name)
+
+    def __delitem__(self, name):
+        # Not idempotent, dump data if autodump enabled
+        retval = super(self.__class__, self).__delitem__(name)
+        if self._autodump: self.dump()
+        return retval
+    
+    def copy(self):
+        return self.__class__(self)
+
+def test_PickleDict():
+    # Tests the functionality of the PickleDict class
+    pd = PickleDict()
+    pd.set_cache_file(cache_name='test', cache_dir_path='/tmp/',
+                           autoload=False)
+    pd['foo'] = ('a', 42)
+    pd['bar'] = ('b',137)
+    print pd['foo']
+    print pd.get('bar','oops no bar!')
+    print pd.get('baz','oops no baz!')
+    del pd
+
+    pd = PickleDict()
+    pd.set_cache_file(cache_name='test',cache_dir_path='/tmp/')
+    assert dict(pd) == {'foo': ('a',42), 'bar': ('b',137)}
+    pd.unlink()
+    del pd
+
+    
+
+def adv_memoize(cache_name=None, cache_stdout=True, cache_dir_path=None, autoload=True):
+    """
+    A more advanced memoization decorator factory which
+    creates decorators that enable memoization which stores
+    calculated values to file. Both the return value of
+    the function and, optionally, the output to STDOUT is cached.
+
+    If not the cache_dir_path kwarg is given the environment variable
+    `MEMOIZE_CAHCE_DIR` will be looked for (fallback is then PWD).
+    """
+    if cache_dir_path == None:
+        cache_dir_path = os.environ.get('MEMOIZE_CACHE_DIR', '.')
+    def decorator(f):
+        if cache_name == None:
+            _cache_name = f.__name__
+        else:
+            _cache_name = cache_name
+
+        # Set keyword arguments to `set_cache_file` CacheDict instance method 
+        scf_kwargs={'cache_dir_path' : cache_dir_path,
+                    'fname_prefix'   : ".adv_memoize_cache_",
+                    'autoload'       : autoload,
+                    'autodump'       : True}
+
+        retval_cache = PickleDict()
+        retval_cache.set_cache_file(f.__name__+'_retval',**scf_kwargs)
+
+        if cache_stdout:
+            output_cache = PickleDict()
+            output_cache.set_cache_file(f.__name__+'_output',**scf_kwargs)
+
+        @wraps(f)
+        def wrapper(*args):
+            if args not in retval_cache:
+                # Function output not in cache
+                if cache_stdout:
+                    # Let's copy stdout to cache
+                    with TeeOutputCacher() as cacher:
+                        retval_cache[args] = f(*args)
+                        output_cache[args] = cacher.dump()
+                else:
+                    retval_cache[args] = f(*args)
+            else:
+                if cache_stdout: 
+                    # Print cached output to stdout
+                    print output_cache[args],
+            return retval_cache[args]
+        return wrapper
+    return decorator
+
+def test_adv_memoize__1():
+
+    @adv_memoize(cache_stdout=False, autoload=False)
+    def square(x):
+        
+        print "Calculating square of " + str(x)
+       # print  >> sys.stderr, "DEBUGINFO: x=" + str(x)
+        square.i += 1
+        return x**2
+
+    square.i = 0
+    square(2)
+    square(2)
+    square(2)
+    assert square.i == 1
+
+def test_adv_memoize__2():
+    @adv_memoize(cache_stdout=True, autoload=False)
+    def cube(x):
+        print "Calculating cube of " + str(x)
+        cube.i += 1
+        return x**3
+
+    cube.i = 0
+    cube(2)
+    cube(2)
+    cube(2)
+    assert cube.i == 1
+
+def test_adv_memoize__3():
+
+    @adv_memoize(cache_stdout=True, autoload=False)
+    def root(x):
+        
+        print "Calculating root of " + str(x)
+        print  >> sys.stderr, "DEBUGINFO: x=" + str(x)
+        root.i += 1
+        return x**0.5
+
+    root.i = 0
+    root(2)
+    root(2)
+    root(2)
+    assert root.i == 1
+
+    
 
 class OutputCacher(object):
     """
-    By initializing a OutputCacher instance
-    sys.stdout is cached in that instance until it
-    is deleted. (Remember to dump content before deletion).
-    Only one instance is allowed to catch unexpected behaviour
+    By using a OutputCacher instance in a `with` statement
+    sys.stdout is cached in that instance until the with statement
+    is completed. (Remember to dump content before exiting with statement).
     """
     # http://stackoverflow.com/questions/616645/how-do-i-duplicate-sys-stdout-to-a-log-file-in-python
     # http://stefaanlippens.net/redirect_python_print
-    num_instances = 0
+
     def __init__(self):
         self.content = []
+
+    def __enter__(self):
+        # Used in `with` statement
         self.stdout  = sys.stdout
         sys.stdout   = self
-	if OutputCacher.num_instances == 0:
-	    OutputCacher.num_instances = 1
-	else:
-	    raise ValueError('Tried to initalize multiple OutputCachers')
-
-    def __del__(self):
-        sys.stdout = self.stdout
-	OutputCacher.num_instances -= 1
+        return self
+        
+    def __exit__(self, type, value, traceback):
+        sys.stdout = self.stdout        
 
     def write(self, data):
         self.content.append(data)
 
     def dump(self):
         return ''.join(self.content)
+
+def test_OutputCacher():
+    print 'Creating OutputCacher instance'
+    with OutputCacher() as oc:
+        print 'hello'
+        print 'world'
+        tmp = oc.dump()
+
+    print 'Just exited with statement, lets look what was put into output:'
+    print tmp,
+    print 'Well, I hope it reads \"hello\nworld\"'
 
 
 class TeeOutputCacher(OutputCacher):
@@ -125,7 +304,7 @@ class TeeOutputCacher(OutputCacher):
     """
     def write(self, data):
         self.content.append(data)
-	self.stdout.write(self.dump())
+	self.stdout.write(data)
 
 
 class ParameterStore(object):
