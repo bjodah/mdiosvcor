@@ -27,6 +27,10 @@ This package relies on:
 - [Python](http://python.org) 2.7.x
 - [Sympy](http://sympy.org) to treat algebraic expressions symbolically (Ubuntu package name: python-sympy)
 
+Furthermore, for full functinoality, additional requirements apply:
+
+- f2py (requires gfortran and numpy)
+
 ## Additional information
 Beyond the core equations used in calculating the correction terms specified in the article above,
 this project reimplements the [IAPWS95](http://iapws.org) formaulation of thermodynamic properties
@@ -39,7 +43,7 @@ of the resulting implicit relation.
 ## Possible future extensions
 Feel free to write them and make a pull request at github:
 - Implement expressions not only for LS but also for CT
-- Ideas?
+- Optimize performance (e.g. save compiled autowrapped functions to avoid recompilation)
 
 ## Participate
 Any comments and/or imporvements of the code are greatly appreciated.

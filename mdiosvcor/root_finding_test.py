@@ -1,10 +1,18 @@
-#/usr/bin/env python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This work is open source and is released under the
+# 2-clause BSD license (see LICENSE.txt for further information)
+# Copyright (c) 2011, 2012, Björn Ingvar Dahlgren
+
 from __future__ import division
 import unittest
 from root_finding import *
 from math import sin, cos
 
-# Define some test functions to use:
+"""
+Unit-test for root_finiding.py
+"""
 
 def parabola(x):
     # x2-x+0.244449
@@ -49,14 +57,14 @@ ex3_3.fix_point = ex3_3_fix_point
 class TestSecantMethod(unittest.TestCase):
     def runTest(self):
         x, y = find_root(parabola, parabola.start_guesses[0], 'secant',
-                         parabola.dfdx, verbose = True)
-        
+                         parabola.dfdx, verbose = False)
+
 
 class TestTolerances(unittest.TestCase):
 
     def yabstol(self, func, x0, preferred_method, dfdx, xtrue, dx0, tol, verbose):
         print "Testing yabstol"
-        x, y = find_root(func, x0, preferred_method, dfdx, dx0, yabstol=tol, maxiter=30, verbose=verbose)
+        x, dx = find_root(func, x0, preferred_method, dfdx, dx0, yabstol=tol, maxiter=30, verbose=verbose)
         print "f({0:20.13g}) = {1: <17.10g}".format(x,func(x))
         fmtstr="analytical: {0: <"+self.precision+"}, diff: {1: <"+ \
                self.precision+"}"
@@ -65,7 +73,7 @@ class TestTolerances(unittest.TestCase):
 
     def xabstol(self, func, x0, preferred_method, dfdx, xtrue, dx0, tol, verbose):
         print "Testing xabstol"
-        x, y = find_root(func, x0, preferred_method, dfdx, dx0, xabstol=tol, maxiter=30, verbose=verbose)
+        x, dx = find_root(func, x0, preferred_method, dfdx, dx0, xabstol=tol, maxiter=30, verbose=verbose)
         print "f({0:20.13g}) = {1: <17.10g}".format(x,func(x))
         fmtstr="analytical: {0: <"+self.precision+"}, diff: {1: <"+ \
                self.precision+"}"
@@ -74,19 +82,29 @@ class TestTolerances(unittest.TestCase):
 
     def abstol(self, func, x0, preferred_method, dfdx, xtrue, dx0, tol, verbose):
         print "Testing abstol (xabstol and yabstol)"
-        x, y = find_root(func, x0, preferred_method, dfdx, dx0, abstol=tol, maxiter=30, verbose=verbose)
+        x, dx = find_root(func, x0, preferred_method, dfdx, dx0, abstol=tol, maxiter=30, verbose=verbose)
         print "f({0:20.13g}) = {1: <17.10g}".format(x,func(x))
         fmtstr="analytical: {0: <"+self.precision+"}, diff: {1: <"+ \
                self.precision+"}"
         print fmtstr.format(xtrue, x - xtrue)
         self.assertTrue(abs(x - xtrue)<tol and abs(func(x))<tol)
-        
+
+
+    def xreltol(self, func, x0, preferred_method, dfdx, xtrue, dx0, tol, verbose):
+        print "Testing xreltol"
+        x, y = find_root(func, x0, preferred_method, dfdx, dx0, xreltol=tol, maxiter=30, verbose=verbose, return_intermediate_results=True)
+	print "f({0:20.13g}) = {1: <17.10g}".format(x[-1],func(x[-1]))
+        fmtstr="analytical: {0: <"+self.precision+"}, diff: {1: <"+ \
+               self.precision+"}"
+        print fmtstr.format(xtrue, x[-1] - xtrue)
+        self.assertTrue(abs((x[-1]-x[-2])/x[-1])<tol)
+
 
     def runTest(self):
-        tol = 1e-9
+        tol = 1e-6
         verbose = False
         self.precision = "20.13g"
-        for preferred_method in ["newton","secant"]:
+        for preferred_method in ["newton", "secant"]:
             for func in [parabola, poly3]:
                 print func.name
                 dfdx = func.dfdx
@@ -95,6 +113,7 @@ class TestTolerances(unittest.TestCase):
                     self.yabstol(func, x0, preferred_method, dfdx, xtrue, dx0, tol, verbose)
                     self.xabstol(func, x0, preferred_method, dfdx, xtrue, dx0, tol, verbose)
                     self.abstol( func, x0, preferred_method, dfdx, xtrue, dx0, tol, verbose)
+                    self.xreltol(func, x0, preferred_method, dfdx, xtrue, dx0, tol, verbose)
 
 if __name__ == '__main__':
     unittest.main()

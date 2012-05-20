@@ -1,4 +1,13 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This work is open source and is released under the
+# 2-clause BSD license (see LICENSE.txt for further information)
+# Copyright (c) 2011, 2012, Björn Ingvar Dahlgren
+
+"""
+Currently not used in the calculation of correction terms.
+"""
 
 import numpy as np
 

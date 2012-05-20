@@ -1,16 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-# Code for implementing common root finding algorithms, implemented
-# with sympy.physics.units compability in mind. (I long for the day
-# sympy interacts well with the PyPI package: "quantities")
-
-# Author: Björn Dahlgren
-# Implemented for use in research project in the IGC group at ETH
 
 # This work is open source and is released under the
 # 2-clause BSD license (see LICENSE.txt for further information)
+# Copyright (c) 2011, 2012, Björn Ingvar Dahlgren
 
+"""
+Module implementing common root finding algorithms.
+Implemented with sympy and sympy.physics.units compability in mind.
+"""
 
 from functools import reduce
 from operator import and_, mul
@@ -22,58 +20,110 @@ try:
 except ImportError:
     ne = False
 
-def get_cb_from_rel(rel, subsd, varied, use_numexpr=False, unitless=False, bincompile=False):
+
+def find_root(func,
+              x0,
+              preferred_method=None,
+              dfdx=None,
+              dx0=None,
+              xunit=1.0,
+	      yunit=1.0,
+              abstol=None,
+              yabstol=None,
+              xabstol=None,
+	      xreltol=None,
+              maxiter=25,
+              return_intermediate_results=False,
+              verbose=False):
     """
-    Turn a symbolic (sympy) equation into a python callback
-    of one variable.
+    If no preferred method is specified:
+        If dfdx is specified, assume that Newtons method is wanted.
+        Else assume secant method.
 
-    Some rules of thumb:
-
-    If the callback will be evaluated for large vectors set
-        use_numexpr = True
-
-    If the expression is very complicated and will be called pointwise set
-        bincompile = True
+    TODO: let unit be automatically taken from x0 and func
     """
-    from sympy import symbols
-    from sympy.abc import x
-    # If varied is general function dep. on (x,y) we cannot
-    # substitute for x and y without error. Therefore we
-    # mask `varied` as dummy and resubstitute it later
-    dummy = symbols('_dummy_')
-    subsrel = rel.subs({varied:dummy})
-    subsrel = subsrel.subs(subsd)
-    if bincompile:
-	assert not use_numexpr
-	assert unitless
-	return autowrap(subsrel.subs({dummy:x}))
+
+    if preferred_method == "newton" or \
+        (not preferred_method and dfdx):
+        if verbose: print "Using Newton's method."
+        method_cb, method_args = (newton_generator, (func, x0, dfdx))
+    elif preferred_method == "secant" or \
+        (not preferred_method and not dfdx):
+        if verbose: print "Using the secant method."
+        if not dx0:
+            # If no dx0 specified take an arbitrary step forward
+	    if x0 != 0:
+		dx0 = x0*1e-1
+	    else:
+		dx0 = 1e-7*xunit
+            if verbose: print "Assuming dx0 = {0}".format(dx0)
+        method_cb, method_args = (secant_generator, (func, x0, dx0))
     else:
-	if use_numexpr:
-	    def f0(x):
-		return ne.evaluate(str(subsrel), {str(dummy): x})
-	else:
-	    subsrel = subsrel.subs({dummy:varied})
-	    def f0(x):
-		return subsrel.subs({varied: x})
-	return f0
+        NotImplemented
+
+    # Setup tolerance requierments
+    satisfication_functions = []
+
+    def satisfied():
+        satisfication = [sf() for sf in satisfication_functions]
+        return reduce(and_,satisfication)
+
+    def satisfied_yabstol():
+        return abs(dy/yunit)<yabstol
+
+    def satisfied_xabstol():
+        return abs(dx/xunit)<xabstol
+
+    def satisfied_xreltol():
+        return abs(dx/x)<xreltol
 
 
-def test_get_cb_from_rel():
-    from sympy import symbols, Function, ln
-    x,y = symbols('x,y')
-    f = symbols('f',cls=Function)(x,y)
-    relation = ln(x*y+f)-f
-    subsd = {x:2,y:1}
-    varied = f
-    initial_guess = 1.0
-    cb = get_cb_from_rel(relation, subsd, f)
-    assert cb(1.14619322062) < 1e-12
+    if abstol:
+        if xabstol or yabstol:
+            raise ValueError("Both abstol and xabstol and/or yabstol specified")
+        xabstol = abstol
+        yabstol = abstol
 
-    cb_numexpr = get_cb_from_rel(relation,subsd,f,use_numexpr=True)
-    assert cb_numexpr(1.14619322062) < 1e-12
 
-    cb_autowrap = get_cb_from_rel(relation,subsd,f,bincompile=True,unitless=True)
-    assert cb_autowrap(1.14619322062) < 1e-12
+    if not yabstol and not xabstol and not xreltol:
+        xreltol = 1e-8
+        if verbose: print "Since no tolerances were specified," + \
+           " xreltol assumed = {0:12.5g}".format(xreltol)
+
+    if yabstol: satisfication_functions.append(satisfied_yabstol)
+    if xabstol: satisfication_functions.append(satisfied_xabstol)
+    if xreltol: satisfication_functions.append(satisfied_xreltol)
+
+    # Handle itermediate results if requested
+    if return_intermediate_results:
+        interm_res = []
+
+    def append_res(x,y):
+	interm_res.append((x,y))
+
+
+    # Initialize the generator of chosen method
+    method_gen = method_cb(*method_args)
+    i = 0
+    x0, y0 = method_gen.next()
+    dx, dx_old, dy = None, None, None
+    if verbose: print_info(i,x0,dx,y0,dy,dx_old,xunit,yunit)
+    for x,y in method_gen:
+        i     += 1
+        dx_old = dx
+	dy_old = dy
+        dx, dy = x - x0, y - y0
+        if verbose: print_info(i,x,dx,y,dy,dx_old,xunit,yunit)
+        if return_intermediate_results: append_res(x,y)
+        if satisfied(): break
+        if i == maxiter:
+            raise ValueError("Maximum number of iterations reached")
+        x0, y0 = x, y
+
+    if return_intermediate_results:
+        return zip(*interm_res)
+    else:
+	return x, dx
 
 
 def secant_generator(f, x0, dx0):
@@ -101,6 +151,7 @@ def newton_generator(f, x0, dfdx):
         yield x0, f0
         x0 -= f0/dfdx0
 
+
 def fixed_point_iteration_generator(G, x0, dGdx=None):
     """
     Usually not the best option but if a fixed point iteration
@@ -126,6 +177,7 @@ def fixed_point_iteration_generator(G, x0, dGdx=None):
         yield G_new
         G_old = G0
         dx_old = dx
+
 
 def print_info(i,x,dx,y,dy,dx_old, xunit=1.0, yunit=1.0,
                  fmtstr="{0: >3}{1: >27}{2: >27}"+\
@@ -164,101 +216,6 @@ def print_info(i,x,dx,y,dy,dx_old, xunit=1.0, yunit=1.0,
         print fmtstr.format(i, x/xunit, dx/xunit, y/yunit, dy/yunit,
 			    dx/dx_old**2*xunit)
 
-def find_root(func,
-              x0,
-              preferred_method=None,
-              dfdx=None,
-              dx0=None,
-              xunit=1.0,
-	      yunit=1.0,
-              abstol=None,
-              yabstol=None,
-              xabstol=None,
-              maxiter=25,
-              return_intermediate_results=False,
-              verbose=False):
-    """
-    If no preferred method is specified:
-        If dfdx is specified, assume that Newtons method is wanted.
-        Else assume secant method.
-
-    TODO: let unit be automatically taken from x0 and func
-    """
-
-    if preferred_method == "newton" or \
-        (not preferred_method and dfdx):
-        if verbose: print "Using Newton's method."
-        method_cb, method_args = (newton_generator, (func, x0, dfdx))
-    elif preferred_method == "secant" or \
-        (not preferred_method and not dfdx):
-        if verbose: print "Using the secant method."
-        if not dx0:
-            # If no dx0 specified take an arbitrary step forward
-	    if x0 != 0:
-		dx0 = x0*1e-1
-	    else:
-		dx0 = 1e-7*xunit
-            if verbose: print "Assuming dx0 = {0}".format(dx0)
-        method_cb, method_args = (secant_generator, (func, x0, dx0))
-    else:
-        NotImplemented
-
-    # Setup tolerance requierments
-    satisfication_functions = []
-
-    def satisfied():
-        satisfication = [sf() for sf in satisfication_functions]
-        return reduce(and_,satisfication)
-
-    def satisfied_yabstol():
-        return abs(y/yunit)<yabstol
-
-    def satisfied_xabstol():
-        return abs(dx/xunit)<xabstol
-
-    if abstol:
-        if xabstol or yabstol:
-            raise ValueError("Both abstol and xabstol and/or yabstol specified")
-        yabstol = abstol
-        xabstol = abstol
-
-    if not yabstol and not xabstol:
-        yabstol = 1e-10
-        if verbose: print "Since no tolerances were specified," + \
-           " abstol assumed = {0:12.5g}".format(yabstol)
-
-    if yabstol: satisfication_functions.append(satisfied_yabstol)
-    if xabstol: satisfication_functions.append(satisfied_xabstol)
-
-    # Handle itermediate results if requested
-    if return_intermediate_results:
-        interm_res = []
-
-    def append_res(x,y):
-	iterm_res.append((x,y))
-
-
-    # Initialize the generator of chosen method
-    method_gen = method_cb(*method_args)
-    i = 0
-    x0, y0 = method_gen.next()
-    dx, dx_old, dy = None, None, None
-    if verbose: print_info(i,x0,dx,y0,dy,dx_old,xunit,yunit)
-    for x,y in method_gen:
-        i     += 1
-        dx_old = dx
-        dx, dy = x - x0, y - y0
-        if verbose: print_info(i,x,dx,y,dy,dx_old,xunit,yunit)
-        if return_intermediate_results: append_res(x,y)
-        if satisfied(): break
-        if i == maxiter:
-            raise ValueError("Maximum number of iterations reached")
-        x0, y0 = x, y
-
-    if return_intermediate_results:
-        return interm_res
-    else:
-	return x, dx
 
 def solve_relation_num(rel,
 		       subsd,
@@ -448,3 +405,55 @@ def test_solve_relation_for_derivatives():
     assert abs(dg[((x, 1),)]-2.0) < 1e-7
 
 
+def get_cb_from_rel(rel, subsd, varied, use_numexpr=False, unitless=False, bincompile=False):
+    """
+    Turn a symbolic (sympy) equation into a python callback
+    of one variable.
+
+    Some rules of thumb:
+
+    If the callback will be evaluated for large vectors set
+        use_numexpr = True
+
+    If the expression is very complicated and will be called pointwise set
+        bincompile = True
+    """
+    from sympy import symbols
+    from sympy.abc import x
+    # If varied is general function dep. on (x,y) we cannot
+    # substitute for x and y without error. Therefore we
+    # mask `varied` as dummy and resubstitute it later
+    dummy = symbols('_dummy_')
+    subsrel = rel.subs({varied:dummy})
+    subsrel = subsrel.subs(subsd)
+    if bincompile:
+	assert not use_numexpr
+	assert unitless
+	return autowrap(subsrel.subs({dummy:x}))
+    else:
+	if use_numexpr:
+	    def f0(x):
+		return ne.evaluate(str(subsrel), {str(dummy): x})
+	else:
+	    subsrel = subsrel.subs({dummy:varied})
+	    def f0(x):
+		return subsrel.subs({varied: x})
+	return f0
+
+
+def test_get_cb_from_rel():
+    from sympy import symbols, Function, ln
+    x,y = symbols('x,y')
+    f = symbols('f',cls=Function)(x,y)
+    relation = ln(x*y+f)-f
+    subsd = {x:2,y:1}
+    varied = f
+    initial_guess = 1.0
+    cb = get_cb_from_rel(relation, subsd, f)
+    assert cb(1.14619322062) < 1e-12
+
+    cb_numexpr = get_cb_from_rel(relation,subsd,f,use_numexpr=True)
+    assert cb_numexpr(1.14619322062) < 1e-12
+
+    cb_autowrap = get_cb_from_rel(relation,subsd,f,bincompile=True,unitless=True)
+    assert cb_autowrap(1.14619322062) < 1e-12

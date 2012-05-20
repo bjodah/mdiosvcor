@@ -3,11 +3,16 @@
 
 # This work is open source and is released under the
 # 2-clause BSD license (see LICENSE.txt for further information)
+# Copyright (c) 2011, 2012, Björn Ingvar Dahlgren
+
+"""
+Equations used when calculating the correction terms.
+"""
 
 from __future__ import division     # 1/3 returns 0.333... instead of 0
 from collections import defaultdict
-from functools import reduce        # For Python 3 compability
 from operator import add
+from functools import reduce # Python 3 compability
 
 from sympy import *
 from sympy.physics import units # Sympy does not support
@@ -67,6 +72,8 @@ for cor_type, cor_eq in Delta_G_LS.iteritems():
 
 
 def get_rho_subs(P_val, T_val, abstol=1e-9, verbose=False):
+    from functools import reduce
+    from operator import add
     """
     The IAPWS95 expression is implicit and rho must
     be calculated numerically
@@ -77,8 +84,13 @@ def get_rho_subs(P_val, T_val, abstol=1e-9, verbose=False):
     T_order = 2 # We need up to second derivative wrt to T
     val, err = get_water_density_derivatives(P_order, T_order, P_val,
 					     T_val, None, verbose, abstol)
+
     subs = {}
-    for k,v in val:
+    for k, v in val.iteritems():
+	print k
+	l = reduce(add, k)
+	print l
+	print Derivative(rho_prime, *reduce(add, k))
 	subs[Derivative(rho_prime, *reduce(add, k))] = v * scaling_factor
     return subs
 
@@ -87,7 +99,14 @@ def test_get_rho_subs():
     print get_rho_subs(P0, Tdash)
 
 
-def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion,cor_type="all",verbose=False):
+def get_correction_terms(Ys, Ps, Ts, NWs, Is, cors, verbose=False):
+    from itertools import product
+    result = {}
+    for conditions in product(Ys, Ps, Ts, NWs, Is, cors):
+	result[conditions] = get_Delta_Y_cor_LS(*conditions, verbose=False)
+    return result
+
+def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=False):
     """
     Function which returns a correction term of type
     cor_type or a dictionary of all correction terms
@@ -108,7 +127,22 @@ def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion,cor_type="all",verbose=Fals
     assert(ion in IONS)
     assert(Y in Y_TYPES)
 
-    if verbose: print "Calculating for P={}, T={}".format(P_val,T_val)
+    try:
+	float(P_val/units.pascal)
+    except:
+	# Assume Pascal
+	P_val *= units.pascal
+
+    try:
+	float(T_val/units.kelvin)
+    except:
+	# Assume Kelvin
+	T_val *= units.kelvin
+
+
+    if verbose:
+	fstr = "Calculating for P={}, T={}, N_W_val={}, ion={}"
+	print fstr.format(P_val, T_val, N_W_val, ion)
     if cor_type == "all":
 	if verbose: print "Calculating all correction term types ("+", ".join(COR_TYPES)+")"
 	result = {}
@@ -122,6 +156,8 @@ def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion,cor_type="all",verbose=Fals
 		 q_I: q_I_val[ion], R_I: R_I_val[ion],
 		 gamma_prime: gamma_prime_val}
 	subsd.update(get_rho_subs(P_val, T_val, verbose=verbose))
+	print subsd
+	print Delta_Y_LS[Y][cor_type]
 	return Delta_Y_LS[Y][cor_type].subs(subsd)
 
 
@@ -129,4 +165,3 @@ def test_get_Delta_Y_cor_LS(verbose=False):
     Y='G'; P_val=P0; T_val = Tdash; N_W_val=1024; ion='sod'
     print get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,"all",
 			     verbose=verbose)
-

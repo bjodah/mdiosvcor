@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# This work is open source and is released under the
+# 2-clause BSD license (see LICENSE.txt for further information)
+# Copyright (c) 2011, 2012, Björn Ingvar Dahlgren
+
+"""
+Constants used when calculating the correction terms
+"""
+
 from __future__ import division # so that 1/3 returns 0.333333 not 0
 from collections import namedtuple
 from sympy import symbols, sympify

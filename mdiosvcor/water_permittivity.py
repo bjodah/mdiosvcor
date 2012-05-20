@@ -1,13 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# This work is open source and is released under the
+# 2-clause BSD license (see LICENSE.txt for further information)
+# Copyright (c) 2011, 2012, Björn Ingvar Dahlgren
+
 import sympy.core
 from sympy import *
 from sympy.physics import units
 
 from manuscript_constants import P0, Tdash
 
-# Permitivity of water according Bradley and Pitzer
+"""
+Permitivity of water according Bradley and Pitzer
 
+         Bradley, D.J.
+         Pitzer, K.S.
+         Journal Name: J. Phys. Chem.; (United States); Journal Volume: 83:12
+         1979
+         J. Phys. Chem.; (United States); Journal Volume: 83:12
+         Pages: 1599-1603
+         Thermodynamics of electrolytes. 12. Dielectric properties of water and Debye--Hueckel parameters to 350/sup 0/C and 1 kbar
+         http://pubs.acs.org/doi/abs/10.1021/j100475a009
+         DOI: 10.1021/j100475a009
+
+"""
 # Variables
 P  = Symbol('P') # Pressure (Intensive state variable)
 T  = Symbol('T') # Temperature (Intensive state variable)

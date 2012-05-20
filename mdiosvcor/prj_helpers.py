@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This work is open source and is released under the
+# 2-clause BSD license (see LICENSE.txt for further information)
+# Copyright (c) 2011, 2012, Björn Ingvar Dahlgren
+
 import sys
 import cPickle as pickle
 import os
@@ -81,7 +88,7 @@ class PickleDict(dict):
         """
         Sets the file path of the pickle file.
         If `cache_dir_path` is not specified, tempfile.gettempdir will set one.
-        
+
         By leaving the kwarg `autoload` at its default (True) will load the
         pickle file if it exists
         """
@@ -135,7 +142,7 @@ class PickleDict(dict):
         retval = super(self.__class__, self).__delitem__(name)
         if self._autodump: self.dump()
         return retval
-    
+
     def copy(self):
         return self.__class__(self)
 
@@ -157,7 +164,7 @@ def test_PickleDict():
     pd.unlink()
     del pd
 
-    
+
 
 def adv_memoize(cache_name=None, cache_stdout=True, cache_dir_path=None, autoload=True):
     """
@@ -177,7 +184,7 @@ def adv_memoize(cache_name=None, cache_stdout=True, cache_dir_path=None, autoloa
         else:
             _cache_name = cache_name
 
-        # Set keyword arguments to `set_cache_file` CacheDict instance method 
+        # Set keyword arguments to `set_cache_file` CacheDict instance method
         scf_kwargs={'cache_dir_path' : cache_dir_path,
                     'fname_prefix'   : ".adv_memoize_cache_",
                     'autoload'       : autoload,
@@ -202,7 +209,7 @@ def adv_memoize(cache_name=None, cache_stdout=True, cache_dir_path=None, autoloa
                 else:
                     retval_cache[args] = f(*args)
             else:
-                if cache_stdout: 
+                if cache_stdout:
                     # Print cached output to stdout
                     print output_cache[args],
             return retval_cache[args]
@@ -213,7 +220,7 @@ def test_adv_memoize__1():
 
     @adv_memoize(cache_stdout=False, autoload=False)
     def square(x):
-        
+
         print "Calculating square of " + str(x)
        # print  >> sys.stderr, "DEBUGINFO: x=" + str(x)
         square.i += 1
@@ -242,7 +249,7 @@ def test_adv_memoize__3():
 
     @adv_memoize(cache_stdout=True, autoload=False)
     def root(x):
-        
+
         print "Calculating root of " + str(x)
         print  >> sys.stderr, "DEBUGINFO: x=" + str(x)
         root.i += 1
@@ -254,7 +261,7 @@ def test_adv_memoize__3():
     root(2)
     assert root.i == 1
 
-    
+
 
 class OutputCacher(object):
     """
@@ -273,9 +280,9 @@ class OutputCacher(object):
         self.stdout  = sys.stdout
         sys.stdout   = self
         return self
-        
+
     def __exit__(self, type, value, traceback):
-        sys.stdout = self.stdout        
+        sys.stdout = self.stdout
 
     def write(self, data):
         self.content.append(data)

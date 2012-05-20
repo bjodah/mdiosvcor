@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Provides constants used in the IAPWS95 formulation.
-
-# Author: Björn Dahlgren
-# Implemented for use in research project in the IGC group at ETH
-
 # This work is open source and is released under the
 # 2-clause BSD license (see LICENSE.txt for further information)
+# Copyright (c) 2011, 2012, Björn Ingvar Dahlgren
 
+"""
+Provides constants used in the IAPWS95 formulation.
+"""
 
 from sympy import sympify
 from sympy.physics import units
