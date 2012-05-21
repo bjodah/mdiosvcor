@@ -166,7 +166,7 @@ def test_PickleDict():
 
 
 
-def adv_memoize(cache_name=None, cache_stdout=True, cache_dir_path=None, autoload=True):
+def adv_memoize(cache_name=None, cache_stdout=True, cache_dir_path=None, autoload=True, verbose=False):
     """
     A more advanced memoization decorator factory which
     creates decorators that enable memoization which stores
@@ -209,6 +209,7 @@ def adv_memoize(cache_name=None, cache_stdout=True, cache_dir_path=None, autoloa
                 else:
                     retval_cache[args] = f(*args)
             else:
+		if verbose: print "Cached value found"
                 if cache_stdout:
                     # Print cached output to stdout
                     print output_cache[args],
@@ -337,3 +338,43 @@ class ParameterStore(object):
             return get_unitless(self._parameters[item])
         else:
             return self._parameters[item]
+
+def get_dict_combinations_for_diff(d):
+    """
+    Useful for generating a list ordered for differentiating
+    a function step by step to higher and higher orders with
+    respect to a variable.
+
+    E.g.
+
+    In [14]: combo.get_dict_combinations_for_diff({'x':3,'y':2})
+    Out[14]:
+    [{'x': 0, 'y': 0},
+     {'x': 0, 'y': 1},
+     {'x': 0, 'y': 2},
+     {'x': 1, 'y': 0},
+     {'x': 1, 'y': 1},
+     {'x': 1, 'y': 2},
+     {'x': 2, 'y': 0},
+     {'x': 2, 'y': 1},
+     {'x': 2, 'y': 2},
+     {'x': 3, 'y': 0},
+     {'x': 3, 'y': 1},
+     {'x': 3, 'y': 2}]
+
+    """
+
+    from itertools import product
+
+    list_of_dicts = []
+    ranges = []
+    keys = d.keys()
+    for key in keys:
+        ranges.append(range(0,d[key]+1))
+
+    for cmb in product(*ranges):
+        list_of_dicts.append(dict(zip(keys, cmb)))
+
+    return list_of_dicts
+
+

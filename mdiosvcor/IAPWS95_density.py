@@ -6,22 +6,32 @@
 # Copyright (c) 2011, 2012, Björn Ingvar Dahlgren
 
 """
-Module for calculating density
+Module for calculating density of water
 as function pressure and temperature
 according to IAPWS95 formulation.
+
 The code is entirely based on the publication:
    Wagner, W., and A. Pruß. “The IAPWS Formulation 1995 for the
    Thermodynamic Properties of Ordinary Water Substance for
    General and Scientific Use.” Journal of Physical and Chemical
    Reference Data 31, no. 2 (June 7, 2002): 387–535.
+
+Latest version is available at github.com/bjodah/mdiosvcor
+
+Implemented for use in research project in the IGC group at ETH
+
+See README.md and LICENSE.txt for further information
 """
 
 from __future__ import division
-import argparse
+#import argparse
+
+from tempfile import gettempdir
+import os
 
 from sympy import *
 from sympy.physics import units
-from root_finding import find_root, solve_relation_num, solve_relation_for_derivatives
+from root_finding import find_root, solve_relation_for_derivatives
 from prj_helpers import get_sympified, get_unitless, adv_memoize
 # pickle_cached stores a '.pickle_cached__'+fname file with data for future use
 
@@ -145,33 +155,36 @@ def get_expl_pressure_relation(unitless=False):
 
 
 def get_water_density(val_P=None, val_T=None, val_rho0=None,
-		      verbose = False, abstol=1e-9,
-		      use_numexpr=False, ret_w_units=True):
+		      verbose = False, reltol=1e-9,
+		      use_numexpr=False, use_finite_difference=False,
+		      ret_w_units=True):
     """
     This work only uses the density of water, therefore a helper
     function is definied for accessing density at a given pressure
     and termperature
     """
     rho_val, rho_err = get_water_density_derivatives(0, 0, val_T,
+						     val_P,
 						     val_rho0,
-						     verbose, abstol,
+						     verbose, reltol,
 						     use_numexpr,
+						     use_finite_difference,
 						     ret_w_units)
     return rho_val[((P_,0),(T_,0))], rho_err[((P_,0),(T_,0))]
 
 
-def test_get_water_density(verbose=False, use_numexpr=False):
-    rho, drho = get_water_density(verbose=verbose,
-				  use_numexpr=use_numexpr)
-    assert abs(get_unitless(rho) - 997.05) < 1e-2
+def test_get_water_density():
+    rho, drho = get_water_density(verbose=True)
+    assert abs(get_unitless(rho) - 997.047625482) < 997/1e9
 
-@adv_memoize()
+#@adv_memoize()
 def get_water_density_derivatives(P_order, T_order,
 				  val_P=None, val_T=None, val_rho0=None,
 				  verbose = False, reltol=1e-9,
 				  use_numexpr=False,
 				  use_finite_difference=False,
-				  ret_w_units=True):
+				  ret_w_units=True,
+				  skip_sigs=None):
     """
     If `use_finite_difference` is specified, instead of solving the
     implicit equations for the derivatives directly, the derivatives
@@ -181,15 +194,24 @@ def get_water_density_derivatives(P_order, T_order,
     if not val_P: val_P = sympify(101.3e3) * units.pascal
     if not val_T: val_T = sympify(298.15)  * units.kelvin
 
-    # In order to speed up the root finding iterations, inital guesses are given
-    # (previously calculated using finite differnces)
-    if not val_rho0: val_rho0  = {((P_, 0), (T_, 0)): sympify(997.05)     * density_units,
-				  ((P_, 1), (T_, 0)): sympify(  4.51e-7)  * density_units / units.pascal,
-				  ((P_, 0), (T_, 1)): sympify( -2.57e-1)  * density_units / units.kelvin,
-				  ((P_, 2), (T_, 0)): sympify( -9.56e-16) * density_units / units.pascal**2,
-				  ((P_, 0), (T_, 2)): sympify( -9.53e-3)  * density_units / units.kelvin**2,
-				  ((P_, 1), (T_, 1)): sympify( -1.23e-9)  * density_units / units.pascal / units.kelvin}
+    # In order to speed up the root finding iterations,
+    # inital guesses are given (previously calculated
+    # using finite differnces)
+    if not val_rho0: val_rho0  = { \
+	((P_, 0), (T_, 0)): sympify(997.05)     * density_units,
+	((P_, 1), (T_, 0)): sympify(  4.51e-7)  * density_units \
+	/ units.pascal,
+	((P_, 0), (T_, 1)): sympify( -2.57e-1)  * density_units \
+	/ units.kelvin,
+	((P_, 2), (T_, 0)): sympify( -9.56e-16) * density_units \
+	/ units.pascal**2,
+	((P_, 0), (T_, 2)): sympify( -9.53e-3)  * density_units \
+	/ units.kelvin**2,
+	((P_, 1), (T_, 1)): sympify( -1.23e-9)  * density_units \
+	/ units.pascal / units.kelvin}
 
+    if skip_sigs == None:
+	skip_sigs = ()
 
     # Now convert all input to unitless floats, assume SI units.
 
@@ -225,40 +247,71 @@ def get_water_density_derivatives(P_order, T_order,
 			'verbose': verbose}
 
     expl_pressure_relation = get_expl_pressure_relation(unitless=True)
+    store_dir = os.environ.get("MEMOIZE_CACHE_DIR", gettempdir())
+    mod_basename = "IAPWS95_density_der_"
     val, err = solve_relation_for_derivatives(expl_pressure_relation,
-					      {P_: val_P, T_: val_T},
-					      rho_,
-					      val_rho0,
-					      diff_wrt,
-					      use_numexpr,
-					      unitless=True,
-					      bincompile=True,
-					      **find_root_kwargs)
-
+				      {P_: val_P, T_: val_T},
+				      rho_,
+				      val_rho0,
+				      diff_wrt,
+				      rel_args     =(P_,T_),
+				      use_numexpr  =use_numexpr,
+				      unitless	   = True,
+				      bincompile   = True,
+				      store_dir    = store_dir,
+				      mod_basename = mod_basename,
+				      skip_sigs	   = skip_sigs,
+				      **find_root_kwargs)
     if ret_w_units:
 	"""
 	Multiply with SI units from sympy.physics.units
 	"""
 	for k in val.keys():
 	    P_ot, T_ot = k
+	    err[k]=abs(err[k])
 	    if T_ot[1] > 0:
 		try:
 		    val[k] /= (units.kelvin**T_ot[1])
+		    err[k] /= (units.kelvin**T_ot[1])
 		except:
 		    pass
 	    if P_ot[1] > 0:
 		try:
 		    val[k] /= (units.pascal**P_ot[1])
+		    err[k] /= (units.pascal**P_ot[1])
 		except:
 		    pass
 	    val[k] *= density_units
+	    err[k] *= density_units
 
     return val, err
 
-def test_get_water_density_derivatives(verbose=False, use_numexpr=False):
-    drho, drho_err = get_water_density_derivatives(2,2, None, None, None,
-						   verbose, reltol=1e-9,
+def test_get_water_density_derivatives(verbose=True, use_numexpr=False):
+    drho, drho_err = get_water_density_derivatives(2,2,
+						   None,
+						   None,
+						   None,
+						   verbose=verbose,
+						   reltol=1e-9,
 						   use_numexpr=use_numexpr)
 
-    val = drho[((P_,1),(T_,1))]
-    assert abs(val-1.1913e-9)<1e-3
+    initial_guesses={
+	((P_, 0), (T_, 0)): sympify(997.05)     * density_units,
+	((P_, 1), (T_, 0)): sympify(  4.51e-7)  * density_units \
+	/ units.pascal,
+	((P_, 0), (T_, 1)): sympify( -2.57e-1)  * density_units \
+	/ units.kelvin,
+	((P_, 2), (T_, 0)): sympify( -9.56e-16) * density_units \
+	/ units.pascal**2,
+	((P_, 0), (T_, 2)): sympify( -9.53e-3)  * density_units \
+	/ units.kelvin**2,
+	((P_, 1), (T_, 1)): sympify( -1.23e-9)  * density_units \
+	/ units.pascal / units.kelvin}
+
+
+    if verobse: print "key, inital_guess, accepted_val"
+    for k,v in initial_guesses.iteritems():
+	if verbose:
+	    pass
+	    #print k,v,drho[k]
+	assert abs(1-drho[k]/v) < 0.1 # Assume initial guesses close

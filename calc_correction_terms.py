@@ -36,9 +36,8 @@ if __name__ == '__main__':
 				     "G = Gibb's free energy, H = Enthalpy, S = Entropy, "+\
 				     "CP = Isobaric heat capacity, V = molar volume, "+\
 				     "KT = isothermal volume-compressibility, AP = isobaric volume-expansivity")
-
-    parser.add_argument('-T', '--temperature',	type=float,     default=273.15, help='Temperature in Kelvin')
     parser.add_argument('-P', '--pressure',	type=float,	default=101300, help='Pressure in Pascal')
+    parser.add_argument('-T', '--temperature',	type=float,     default=298.15, help='Temperature in Kelvin')
     parser.add_argument('-N', '--nwater',	type=int,       default=1024,   help='Number of water molecules')
     parser.add_argument('-Y', '--property',	type=str,	default='G',    help='Thermodynamic property, specify one of: '+', '.join(Y_TYPES))
     parser.add_argument('-c', '--cortype',	type=str,	default='all',  help='Correction type, specify either \'all\' or any of: '+', '.join(COR_TYPES))
@@ -47,9 +46,17 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     argd = vars(args)
+    if argd['verbose']:
+	fstr = "Calculating for P={}, T={}, N_W_val={}, ion={}"
+	print fstr.format(*[argd[k] for k in ('pressure',
+					      'temperature',
+					      'nwater',
+					      'ion')])
+
     print(get_Delta_Y_cor_LS(Y	      = argd['property'],
 			     P_val    = argd['pressure'],
 			     T_val    = argd['temperature'],
 			     N_W_val  = argd['nwater'],
 			     ion      = argd['ion'],
-			     cor_type = argd['cortype']))
+			     cor_type = argd['cortype'],
+			     verbose  = argd['verbose']))

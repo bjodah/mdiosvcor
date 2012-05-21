@@ -9,7 +9,7 @@
 Equations used when calculating the correction terms.
 """
 
-from __future__ import division     # 1/3 returns 0.333... instead of 0
+from __future__ import division # 1/3 returns 0.333... instead of 0
 from collections import defaultdict
 from operator import add
 from functools import reduce # Python 3 compability
@@ -19,7 +19,7 @@ from sympy.physics import units # Sympy does not support
                                 # PyPI package "Quantities"
 
 from water_permittivity import eps, get_water_eps
-from IAPWS95_density import get_water_density_derivatives
+from IAPWS95_density import get_water_density_derivatives, P_, T_
 from manuscript_constants import P, T, P0, Tdash, eps0, alpha_LS, \
      M_W, N_A, gamma_prime_val, chi_prime, chi_tilde_minus_prime, \
      q_I_val, R_I_val
@@ -71,27 +71,35 @@ for cor_type, cor_eq in Delta_G_LS.iteritems():
     Delta_Y_LS['AP'][cor_type] = diff(cor_eq,P,T)
 
 
-def get_rho_subs(P_val, T_val, abstol=1e-9, verbose=False):
+def get_rho_subs(P_val, T_val, reltol=1e-9, verbose=False,
+		 IAPWS95_verbose=False):
     from functools import reduce
     from operator import add
+
     """
     The IAPWS95 expression is implicit and rho must
     be calculated numerically
     """
-    scaling_factor = 968.2/997.05 # See Table 3 on p. 43 in MS
+    scaling_factor = 968.2/997.047625482 # See Table 3 on p. 43 in MS
     if verbose: print "Calculating water density P and T derivatives using IAPWS95..."
     P_order = 2 # We need up to second derivative wrt to P
     T_order = 2 # We need up to second derivative wrt to T
+    skip_sigs = (((P_, 1), (T_, 2)),
+		 ((P_, 2), (T_, 2)),
+		 ((P_, 2), (T_, 1)))
+
     val, err = get_water_density_derivatives(P_order, T_order, P_val,
-					     T_val, None, verbose, abstol)
+					     T_val, None,
+					     IAPWS95_verbose,
+					     reltol,
+					     skip_sigs=skip_sigs)
 
     subs = {}
     for k, v in val.iteritems():
-	print k
-	l = reduce(add, k)
-	print l
-	print Derivative(rho_prime, *reduce(add, k))
-	subs[Derivative(rho_prime, *reduce(add, k))] = v * scaling_factor
+	subs[Derivative(rho_prime, *reduce(add, k))] =v*scaling_factor
+	if verbose:
+	    k = Derivative(rho_prime, *reduce(add, k))
+	    print k,'=',subs[k]
     return subs
 
 
@@ -103,8 +111,10 @@ def get_correction_terms(Ys, Ps, Ts, NWs, Is, cors, verbose=False):
     from itertools import product
     result = {}
     for conditions in product(Ys, Ps, Ts, NWs, Is, cors):
-	result[conditions] = get_Delta_Y_cor_LS(*conditions, verbose=False)
+	result[conditions] = get_Delta_Y_cor_LS(*conditions,
+						verbose=False)
     return result
+
 
 def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=False):
     """
@@ -139,29 +149,27 @@ def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=Fa
 	# Assume Kelvin
 	T_val *= units.kelvin
 
-
-    if verbose:
-	fstr = "Calculating for P={}, T={}, N_W_val={}, ion={}"
-	print fstr.format(P_val, T_val, N_W_val, ion)
+    subsd = get_rho_subs(P_val, T_val, verbose=verbose)
     if cor_type == "all":
-	if verbose: print "Calculating all correction term types ("+", ".join(COR_TYPES)+")"
+	if verbose: print "Calculating all correction term types ("+\
+	   ", ".join(COR_TYPES)+")"
 	result = {}
 	for key in Delta_Y_LS[Y].keys():
+	    # Call the the function itself for each Y
 	    result[key] = get_Delta_Y_cor_LS(Y, P_val, T_val,N_W_val,
-					     ion, cor_type=key, verbose=verbose)
+					     ion, cor_type=key,
+					     verbose=verbose)
 	return result
     else:
 	if verbose: print "Calculating cor_type: {}".format(cor_type)
-	subsd = {P: P_val, T: T_val, N_W: N_W_val,
+	subsd.update({P: P_val, T: T_val, N_W: N_W_val,
 		 q_I: q_I_val[ion], R_I: R_I_val[ion],
-		 gamma_prime: gamma_prime_val}
-	subsd.update(get_rho_subs(P_val, T_val, verbose=verbose))
-	print subsd
-	print Delta_Y_LS[Y][cor_type]
-	return Delta_Y_LS[Y][cor_type].subs(subsd)
+		 gamma_prime: gamma_prime_val})
+	return Delta_Y_LS[Y][cor_type].subs(subsd).evalf()
 
 
 def test_get_Delta_Y_cor_LS(verbose=False):
     Y='G'; P_val=P0; T_val = Tdash; N_W_val=1024; ion='sod'
     print get_Delta_Y_cor_LS(Y, P_val,T_val,N_W_val,ion,"all",
 			     verbose=verbose)
+

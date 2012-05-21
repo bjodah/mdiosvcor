@@ -12,7 +12,8 @@ from sympy.physics import units
 from manuscript_constants import P0, Tdash
 
 """
-Permitivity of water according Bradley and Pitzer
+Permitivity of water according to
+the parametrization by Bradley and Pitzer
 
          Bradley, D.J.
          Pitzer, K.S.
@@ -49,16 +50,12 @@ def get_water_eps(P_val,T_val, expr=eps):
     try:
         float(P_val/units.pascal)
     except:
-        unit = units.pascal
-        print 'Warning: assumed P_val was in unit:' + str(unit)
-        P_val *= unit
+        P_val *= units.pascal
 
     # If T is without unit, assume Kelvin:
     try:
         float(T_val/units.kelvin)
     except:
-        unit = units.kelvin
-        print 'Warning: assumed T_val was in unit:' + str(unit)
-        T_val *= unit
+        T_val *= units.kelvin
 
     return float(expr.subs({P:P_val,T:T_val}))
