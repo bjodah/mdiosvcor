@@ -15,11 +15,11 @@ The program was implemented for use in a research project in the IGC group at ET
 If you make use the code in your own research, please cite the article referenced above.
 
 ## Installation
-This package is written in python, i.e. no compilation is required, just execute "get_correction_terms.py" with appropriate flags. E.g:
+This package is written in python, i.e. no compilation is required, just execute "calc_correction_terms.py" with appropriate flags. E.g:
 
      ./calc_correction_terms.py -T 298.15 -P 101.3e3 -N 1024 -Y G -c all -i sod
 
-(for further information on invocation see help by executing `./get_correction_terms.py --help`)
+(for further information on invocation see help by executing `./calc_correction_terms.py --help`)
 
 ## Prerequisities
 This package relies on:
