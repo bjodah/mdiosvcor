@@ -26,7 +26,13 @@ See README.md and LICENSE.txt for further information
 """
 import argparse, os, sys
 
-absdirname = os.path.abspath(os.path.dirname(sys.argv[0]))
+if __name__ == '__main__':
+    # Running as script
+    absdirname = os.path.abspath(os.path.dirname(sys.argv[0]))
+else:
+    # Being imported
+    absdirname = os.getcwd()
+
 os.environ['MEMOIZE_CACHE_DIR'] = os.path.join(absdirname,'cache/')
 
 from mdiosvcor.manuscript_equations import get_Delta_Y_cor_LS, COR_TYPES, Y_TYPES, Y_UNITS, Y_UNITS_STR, IONS, ION_NAMES
@@ -64,10 +70,45 @@ if __name__ == '__main__':
 
     Y = argd['property']
     try:
-	for k,v in result.iteritems():
+	for key in COR_TYPES:
 	    fmtstr = "{0: >2}: {1} {2}"
 	    # get_unitless is invoked due to residual m**2.0/m**2
-	    print fmtstr.format(k, str(get_unitless(v/Y_UNITS[Y])), Y_UNITS_STR[Y])
+	    print fmtstr.format(key, str(get_unitless(result[key]/ \
+						      Y_UNITS[Y])),
+				Y_UNITS_STR[Y])
     except:
 	raise
 
+
+def batch_calc(Ys, Ps, Ts, NWs, Is, cors, verbose=False, dump_to_file=None):
+    from itertools import product
+    result = {}
+    fmtstr="Y={}, P={}, T={}, NW={}, I={}, COR={}: {} {}"
+    for conditions in product(Ys, Ps, Ts, NWs, Is, cors):
+	result[conditions] = get_Delta_Y_cor_LS(*(conditions+(verbose,)))
+	Y   = conditions[0]
+	cor = conditions[5]
+	unitless_val = get_unitless(result[conditions][cor]/Y_UNITS[Y])
+	str_unit = Y_UNITS_STR[Y]
+	print fmtstr.format(*(conditions+(unitless_val, str_unit)))
+
+    if dump_to_file:
+	try:
+	    import cPickle as pickle
+	except ImportError:
+	    import pickle
+	pickle.dump(result, open(dump_to_file, 'wb'))
+
+
+def test_batch_calc():
+    batch_calc(['G','H'],[101.3e3,101.3e3*5e3],[298.15],[1024],['sod'],['B','C1',],verbose=True,dump_to_file='ignore_pickle_dump_test_batch_calc')
+
+
+def calc_all_for_project():
+    batch_calc(Y_TYPES,[101.3e3],
+	       [273.15, 285.65, 298.15, 310.65, 323.15],
+	       [1024, 724, 512], ['sod','cls'],COR_TYPES,
+	       dump_to_file="ignore_all_cor_prj_T")
+    batch_calc(Y_TYPES,[1e5, 1e5*5e3, 1e5*10e3], [298.15],
+	       [1024, 724, 512], ['sod','cls'],COR_TYPES,
+	       dump_to_file="ignore_all_cor_prj_P")

@@ -509,9 +509,8 @@ def get_cb_from_rel(rel, subs_fs, varied, cb_args=(),
 					  args=(dummy,)+cb_args,
 					  tempdir=store_dir,
 					  mod_name=mod_name)
-	    finally:
-		if added_path: sys.path.pop(sys.path.index(store_dir))
-		return cb
+	    if added_path: sys.path.pop(sys.path.index(store_dir))
+	    return cb
 	else:
 	    from sympy.utilities.autowrap import autowrap
 	    return autowrap(subsrel,args=(dummy,)+cb_args)

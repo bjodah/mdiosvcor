@@ -80,12 +80,12 @@ Delta_Y_LS = defaultdict(dict)
 
 for cor_type, cor_eq in Delta_G_LS.iteritems():
     Delta_Y_LS['G'][cor_type]  = cor_eq
-    Delta_Y_LS['H'][cor_type]  = 1 - T_*diff(cor_eq,T_)
-    Delta_Y_LS['S'][cor_type]  =       -diff(cor_eq,T_)
-    Delta_Y_LS['CP'][cor_type] =    -T_*diff(cor_eq,T_,2)
-    Delta_Y_LS['V'][cor_type]  =        diff(cor_eq,P_)
-    Delta_Y_LS['KT'][cor_type] =       -diff(cor_eq,P_,2)
-    Delta_Y_LS['AP'][cor_type] =        diff(cor_eq,P_,T_)
+    Delta_Y_LS['H'][cor_type]  = cor_eq - T_*diff(cor_eq,T_)
+    Delta_Y_LS['S'][cor_type]  =            -diff(cor_eq,T_)
+    Delta_Y_LS['CP'][cor_type] =         -T_*diff(cor_eq,T_,2)
+    Delta_Y_LS['V'][cor_type]  =             diff(cor_eq,P_)
+    Delta_Y_LS['KT'][cor_type] =            -diff(cor_eq,P_,2)
+    Delta_Y_LS['AP'][cor_type] =             diff(cor_eq,P_,T_)
 
 def get_rho_subs(P_val, T_val, reltol=None, verbose=False,
 		 IAPWS95_verbose=False):
@@ -123,14 +123,6 @@ def get_rho_subs(P_val, T_val, reltol=None, verbose=False,
 def test_get_rho_subs():
     print get_rho_subs(P0, Tdash)
 
-
-def get_correction_terms(Ys, Ps, Ts, NWs, Is, cors, verbose=False):
-    from itertools import product
-    result = {}
-    for conditions in product(Ys, Ps, Ts, NWs, Is, cors):
-	result[conditions] = get_Delta_Y_cor_LS(*conditions,
-						verbose=False)
-    return result
 
 @adv_memoize()
 def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=False):
