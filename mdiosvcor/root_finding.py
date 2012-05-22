@@ -302,9 +302,12 @@ def solve_relation_for_derivatives(rel,
     generate a better starting guess for next derivative
 
     By specifying rel_args, subsd entries with that key will be
-    popped and used as arguments to rel. This is useful if the
+    popped and used as arguments to relation. This is useful if the
     relation is compiled and  will be solved for many values
     of some parameter.
+
+    E.g. we want to evaluate df/dx from the relation above
+    for many different values of x, then we would add x to rel_args.
     """
 
     from prj_helpers import get_dict_combinations_for_diff
@@ -328,7 +331,7 @@ def solve_relation_for_derivatives(rel,
 
 	# If signature in skip list, lets skip this iteration:
 	if signature in skip_sigs:
-	    if verbose: print "Skipping "+str(rel.diff(*reduce(add,signature)))
+	    if verbose: print "Skipping "+str(Derivative(func, *reduce(add,signature)))
 	    continue
 
         # Now let us differentiate the relation wrt
@@ -501,7 +504,7 @@ def get_cb_from_rel(rel, subs_fs, varied, cb_args=(),
 		    fmtstr = "Found precompiled binary `{}` in {}"
 		    print fmtstr.format(mod_name,store_dir)
 	    except ImportError:
-		if verbose: print "Compiling binary..."
+		if verbose: print "Autowrapping binary..."
 		cb = autowrap_and_store(subsrel,
 					  args=(dummy,)+cb_args,
 					  tempdir=store_dir,

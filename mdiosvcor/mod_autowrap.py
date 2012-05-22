@@ -13,8 +13,43 @@ def autowrap_and_store(expr, language='F95', backend='f2py', tempdir=None, args=
 
     code_generator = get_code_generator(language, "autowrap")
     CodeWrapperClass = _get_code_wrapper_class(backend)
-
     # BEGIN MOD
+    # BEGIN COPY OF CodeWrapper.wrap_code
+    def wrap_code(self, routine, helpers=[]):
+	workdir = self.filepath or tempfile.mkdtemp("_sympy_compile")
+        if not os.access(workdir, os.F_OK):
+            os.mkdir(workdir)
+        oldwork = os.getcwd()
+        os.chdir(workdir)
+        try:
+            sys.path.append(workdir)
+	    #BEGIN SUBMOD
+	    if not os.path.exists(self.filename+'.'+\
+				  self.generator.code_extension):
+		print "Writing source code to: "+self.filename+'.'+\
+				  self.generator.code_extension
+		self._generate_code(routine, helpers)
+		self._prepare_files(routine)
+	    else:
+		print "Using previously created source file: "+\
+		      self.filename+'.'+self.generator.code_extension
+            # self._generate_code(routine, helpers)
+            # self._prepare_files(routine)
+	    #END SUBMOD
+	    print "Compiling binary..."
+            self._process_files(routine)
+	    print "Compilation completed."
+            mod = __import__(self.module_name)
+        finally:
+            sys.path.remove(workdir)
+            CodeWrapper._module_counter +=1
+            os.chdir(oldwork)
+            if not self.filepath:
+                shutil.rmtree(workdir)
+
+        return self._get_wrapped_function(mod)
+    # END COPY OF CodeWrapper.wrapcode
+    CodeWrapperClass.wrap_code = wrap_code
     CodeWrapperClass.module_name = mod_name
     CodeWrapperClass.filename = mod_name
     # END MOD

@@ -29,7 +29,7 @@ This package relies on:
 
 Furthermore, for full functinoality, additional requirements apply:
 
-- f2py (requires gfortran and numpy)
+- f2py (provided by [NumPy](http://numpy.scipy.org/))
 
 ## Additional information
 Beyond the core equations used in calculating the correction terms specified in the article above,
@@ -41,7 +41,8 @@ derivatives since the manipulations are done symbolically up to the last step of
 of the resulting implicit relation.
 
 ## Caveats
-Cached compiled binaries are stored
+Cached compiled binaries are stored in cache/ directory. When moving between hosts of different architetchture/OS
+one must purg this directory of ".so" files.
 
 ## Possible future extensions
 Feel free to write them and make a pull request at github:

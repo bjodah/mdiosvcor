@@ -180,7 +180,8 @@ def test_get_water_density():
 #@adv_memoize()
 def get_water_density_derivatives(P_order, T_order,
 				  val_P=None, val_T=None, val_rho0=None,
-				  verbose = False, reltol=1e-9,
+				  verbose = False,
+				  reltol=1e-9,
 				  use_numexpr=False,
 				  use_finite_difference=False,
 				  ret_w_units=True,
@@ -287,15 +288,22 @@ def get_water_density_derivatives(P_order, T_order,
     return val, err
 
 def test_get_water_density_derivatives(verbose=True, use_numexpr=False):
+
+    skip_sigs = (((P_, 1), (T_, 2)),
+		 ((P_, 2), (T_, 2)),
+		 ((P_, 2), (T_, 1)))
+
     drho, drho_err = get_water_density_derivatives(2,2,
 						   None,
 						   None,
 						   None,
 						   verbose=verbose,
 						   reltol=1e-9,
-						   use_numexpr=use_numexpr)
+						   use_numexpr=use_numexpr,
+						   skip_sigs=skip_sigs)
 
-    initial_guesses={
+
+    estimates={
 	((P_, 0), (T_, 0)): sympify(997.05)     * density_units,
 	((P_, 1), (T_, 0)): sympify(  4.51e-7)  * density_units \
 	/ units.pascal,
@@ -309,9 +317,9 @@ def test_get_water_density_derivatives(verbose=True, use_numexpr=False):
 	/ units.pascal / units.kelvin}
 
 
-    if verobse: print "key, inital_guess, accepted_val"
-    for k,v in initial_guesses.iteritems():
+    if verbose: print "key, inital_guess, accepted_val"
+    for k,v in estimates.iteritems():
 	if verbose:
 	    pass
 	    #print k,v,drho[k]
-	assert abs(1-drho[k]/v) < 0.1 # Assume initial guesses close
+	assert abs(1-drho[k]/v) < 0.1 # Assume estimates close

@@ -33,21 +33,23 @@ from mdiosvcor.IAPWS95_density import (
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-P', '--pressure',	type=float,	default=101300, help='Pressure in Pascal')
-    parser.add_argument('-T', '--temperature',	type=float,     default=298.15, help='Temperature in Kelvin')
-    parser.add_argument('-i', '--porder',	type=int,       default=0,      help='Derivative order with respect to presusre')
-    parser.add_argument('-j', '--torder',	type=int,       default=0,      help='Derivative order with respect to temperature')
-    parser.add_argument('-u', '--units',    action='store_true',              help='Print out units of calculated density (derivative).')
-    parser.add_argument('-v', '--verbose',    action='store_true',              help='Print numerical convergence info etc.')
+    parser.add_argument('-P', '--pressure',    type=float, default=101300, help='Pressure in Pascal')
+    parser.add_argument('-T', '--temperature', type=float, default=298.15, help='Temperature in Kelvin')
+    parser.add_argument('-i', '--porder',      type=int,   default=0,      help='Derivative order with respect to presusre')
+    parser.add_argument('-j', '--torder',      type=int,   default=0,      help='Derivative order with respect to temperature')
+    parser.add_argument('-r', '--reltol',      type=float, default=1e-9,   help='Relative tolerance for root finding algorithm.')
+    parser.add_argument('-u', '--units',     action='store_true',          help='Print out units of calculated density (derivative).')
+    parser.add_argument('-v', '--verbose',   action='store_true',          help='Print numerical convergence info etc.')
 
     args = parser.parse_args()
     argd = vars(args)
     if argd['verbose']:
-	fstr = "Calculating for P={}, T={}, porder={}, toder={}"
+	fstr = "Calculating for P={}, T={}, porder={}, toder={} with a relative tolerance of {}"
 	print fstr.format(*[argd[k] for k in ('pressure',
 					      'temperature',
 					      'porder',
-					      'torder')])
+					      'torder',
+					      'reltol')])
 
     val, err = get_water_density_derivatives(argd['porder'],
 					argd['torder'],
@@ -55,6 +57,7 @@ if __name__ == '__main__':
 					argd['temperature'],
 					None,
 					argd['verbose'],
+					argd['reltol'],
 					ret_w_units=argd['units'])
 
     print "val:       {}".format(

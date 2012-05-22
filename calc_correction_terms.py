@@ -10,8 +10,8 @@ Program for calculating the correction terms applied in
 the publication:
 
    Björn Dahlgren, Maria M. Reif, Philippe H. Hünenberger & Niels Hansen
-   "Calculation of derivative thermodynamic hydration and aqueous partial
-   molar properties of ions based on atomistic simulations"
+   `Calculation of derivative thermodynamic hydration and aqueous partial
+   molar properties of ions based on atomistic simulations`
    J. Chem. Theory Comput.
 
 The correction terms are to be applied to thermodynamic solvation parameters and partial molar variables determined by MD simulation.
@@ -29,7 +29,8 @@ import argparse, os, sys
 absdirname = os.path.abspath(os.path.dirname(sys.argv[0]))
 os.environ['MEMOIZE_CACHE_DIR'] = os.path.join(absdirname,'cache/')
 
-from mdiosvcor.manuscript_equations import get_Delta_Y_cor_LS, COR_TYPES, Y_TYPES, IONS, ION_NAMES
+from mdiosvcor.manuscript_equations import get_Delta_Y_cor_LS, COR_TYPES, Y_TYPES, Y_UNITS, Y_UNITS_STR, IONS, ION_NAMES
+from mdiosvcor.prj_helpers import get_unitless
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, epilog="Abbrevations: "+\
@@ -53,10 +54,20 @@ if __name__ == '__main__':
 					      'nwater',
 					      'ion')])
 
-    print(get_Delta_Y_cor_LS(Y	      = argd['property'],
-			     P_val    = argd['pressure'],
-			     T_val    = argd['temperature'],
-			     N_W_val  = argd['nwater'],
-			     ion      = argd['ion'],
-			     cor_type = argd['cortype'],
-			     verbose  = argd['verbose']))
+    result = get_Delta_Y_cor_LS(argd['property'],
+				argd['pressure'],
+				argd['temperature'],
+				argd['nwater'],
+				argd['ion'],
+				argd['cortype'],
+				argd['verbose'])
+
+    Y = argd['property']
+    try:
+	for k,v in result.iteritems():
+	    fmtstr = "{0: >2}: {1} {2}"
+	    # get_unitless is invoked due to residual m**2.0/m**2
+	    print fmtstr.format(k, str(get_unitless(v/Y_UNITS[Y])), Y_UNITS_STR[Y])
+    except:
+	raise
+

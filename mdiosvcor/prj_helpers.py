@@ -40,6 +40,35 @@ def get_unit(arg):
 def get_unitless(arg):
     return arg / get_unit(arg)
 
+def in_terms_of(self, terms):
+    """
+    From http://stackoverflow.com/questions/2038100/sympy-how-to-return-an-expression-in-terms-of-other-expressions
+
+    It would be soo much nicer if sympy would support
+    the PyPI package `Quantities`
+
+    Exapmle usage:
+
+        >>> x = in_terms_of('J',['gram','mile','hour'])
+        >>> x
+        '9765625000*mile**2*gram/(1951609*hour**2)'
+        >>> in_terms_of(x,['J'])
+        'J'
+
+    """
+    from sympy.physics import units
+
+    expr2 = eval(str(self), units.__dict__)
+    converter = {}
+    for term in terms:
+        term_expr = units.__dict__[term]
+	print term_expr
+        coeff = term_expr.as_coeff_terms()[0]
+        unit = units.Unit('my_'+term, term)
+        converter[term_expr/coeff] = unit/coeff
+    return str(expr2.subs(converter))
+
+
 
 def get_sympified(instance):
     if hasattr(instance, 'iteritems'):
@@ -175,6 +204,9 @@ def adv_memoize(cache_name=None, cache_stdout=True, cache_dir_path=None, autoloa
 
     If not the cache_dir_path kwarg is given the environment variable
     `MEMOIZE_CAHCE_DIR` will be looked for (fallback is then PWD).
+
+    TODO: Use python standard library logging module instead
+    TODO: Make it more compatible with functools.lru_cache from Python 3.2+
     """
     if cache_dir_path == None:
         cache_dir_path = os.environ.get('MEMOIZE_CACHE_DIR', '.')

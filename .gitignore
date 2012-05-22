@@ -1,6 +1,7 @@
 *.pyc
 */*.pyc
 mdiosvcor/.adv_memoize_*
+cache/.adv_memoize_*
 cache/*.so
 tmp/
 tmp/*

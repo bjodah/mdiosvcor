@@ -27,8 +27,8 @@ the parametrization by Bradley and Pitzer
 
 """
 # Variables
-P  = Symbol('P') # Pressure (Intensive state variable)
-T  = Symbol('T') # Temperature (Intensive state variable)
+P_  = Symbol('P') # Pressure (Intensive state variable)
+T_  = Symbol('T') # Temperature (Intensive state variable)
 
 U = [0,
   3.4279e2,
@@ -40,10 +40,10 @@ U = [0,
  -8.0325e3  * units.bar,
   4.2142e6  * units.kelvin * units.bar,
   2.1417    / units.kelvin * units.bar]
-B  = U[7] + U[8]/T + U[9]*T
-C  = U[4] + U[5]/(U[6]+T)
-eps1000 = U[1]*exp(U[2]*T+U[3]*T**2)
-eps = eps1000 + C*ln((B+P)/(B+1000.0*units.bar))
+B  = U[7] + U[8]/T_ + U[9]*T_
+C  = U[4] + U[5]/(U[6]+T_)
+eps1000 = U[1]*exp(U[2]*T_+U[3]*T_**2)
+eps = eps1000 + C*ln((B+P_)/(B+1000.0*units.bar))
 
 def get_water_eps(P_val,T_val, expr=eps):
     # If P is without unit, assume Pascal:
@@ -58,4 +58,4 @@ def get_water_eps(P_val,T_val, expr=eps):
     except:
         T_val *= units.kelvin
 
-    return float(expr.subs({P:P_val,T:T_val}))
+    return float(expr.subs({P_:P_val, T_:T_val}))
