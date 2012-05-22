@@ -17,7 +17,7 @@ If you make use the code in your own research, please cite the article reference
 ## Installation
 This package is written in python, i.e. no compilation is required, just execute "get_correction_terms.py" with appropriate flags. E.g:
 
-     ./get_correction_terms.py -T 298.15 -P 101.3e3 -N 1024 -Y G -c all -i sod
+     ./calc_correction_terms.py -T 298.15 -P 101.3e3 -N 1024 -Y G -c all -i sod
 
 (for further information on invocation see help by executing `./get_correction_terms.py --help`)
 
@@ -25,7 +25,7 @@ This package is written in python, i.e. no compilation is required, just execute
 This package relies on:
 
 - [Python](http://python.org) 2.7.x
-- [Sympy](http://sympy.org) to treat algebraic expressions symbolically (Ubuntu package name: python-sympy)
+- [Sympy](http://sympy.org) 0.7.1 to treat algebraic expressions symbolically (Ubuntu package name: python-sympy)
 
 Furthermore, for full functinoality, additional requirements apply:
 
@@ -40,10 +40,13 @@ This is however due to the large number of non-linear terms compuationally expen
 derivatives since the manipulations are done symbolically up to the last step of numerical solution
 of the resulting implicit relation.
 
+## Caveats
+Cached compiled binaries are stored
+
 ## Possible future extensions
 Feel free to write them and make a pull request at github:
 - Implement expressions not only for LS but also for CT
-- Optimize performance (e.g. save compiled autowrapped functions to avoid recompilation)
+- Optimize performance
 
 ## Participate
 Any comments and/or imporvements of the code are greatly appreciated.
@@ -54,8 +57,8 @@ Latest version is available at github.com/bjodah/mdiosvcor
 
 
 ## Contact information
-Author: Björn Ingvar Dahlgren
-Email (@gmail.com): bjodah
+- Author: Björn Ingvar Dahlgren
+- Email (@gmail.com): bjodah
 
 ## License information
 This work is open source and is released under the 2-clause BSD license (see LICENSE.txt for further information)
