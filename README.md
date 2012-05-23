@@ -5,10 +5,10 @@ For installation instructions see below
 
 The program is used for calculating the correction terms applied in the publication:
 
-**   Björn Dahlgren, Maria M. Reif, Philippe H. Hünenberger & Niels Hansen
+   *Björn Dahlgren, Maria M. Reif, Philippe H. Hünenberger & Niels Hansen
    "Calculation of derivative thermodynamic hydration and aqueous partial
    molar properties of ions based on atomistic simulations"
-   J. Chem. Theory Comput. **
+   J. Chem. Theory Comput.*
 
 The program was implemented for use in a research project in the IGC group at ETH Zürich.
 The theory behind the correction terms were developed by several persons in the IGC group (see references in the article above)
