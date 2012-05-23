@@ -3,14 +3,15 @@ This open source python package MDIOSVCOR (Molecular Dynamics IOn SolVation CORr
 
 For installation instructions see below
 
-Program for calculating the correction terms applied in the publication:
+The program is used for calculating the correction terms applied in the publication:
 
    Björn Dahlgren, Maria M. Reif, Philippe H. Hünenberger & Niels Hansen
    "Calculation of derivative thermodynamic hydration and aqueous partial
    molar properties of ions based on atomistic simulations"
    J. Chem. Theory Comput.
 
-The program was implemented for use in a research project in the IGC group at ETH Zürich
+The program was implemented for use in a research project in the IGC group at ETH Zürich.
+The theory behind the correction terms were developed by several persons in the IGC group (see references in the article above)
 
 If you make use the code in your own research, please cite the article referenced above.
 
@@ -73,7 +74,7 @@ Latest version is available at github.com/bjodah/mdiosvcor
 
 
 ## Contact information
-- Author: Björn Ingvar Dahlgren
+- Author of python package: Björn Ingvar Dahlgren
 - Email (@gmail.com): bjodah
 
 ## License information
