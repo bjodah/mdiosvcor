@@ -41,9 +41,9 @@ Y_UNITS_STR = {'G':  'J/mol',
 	       'H':  'J/mol',
 	       'S':  'J/(K mol)',
 	       'CP': 'J/(K mol)',
-	       'V':  'm^3',
-	       'KT': 'm^3/Pa',
-	       'AP': 'm^3/K'
+	       'V':  'm^3/mol',
+	       'KT': 'm^3/(Pa mol)',
+	       'AP': 'm^3/(K mol)'
 	     }
 # Ions (only sodium and chloride ions implemented)
 IONS = ('sod','cls')

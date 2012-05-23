@@ -105,7 +105,7 @@ def test_batch_calc():
 
 
 def calc_all_for_project():
-    batch_calc(Y_TYPES,[101.3e3],
+    batch_calc(Y_TYPES,[1e5],
 	       [273.15, 285.65, 298.15, 310.65, 323.15],
 	       [1024, 724, 512], ['sod','cls'],COR_TYPES,
 	       dump_to_file="ignore_all_cor_prj_T")
