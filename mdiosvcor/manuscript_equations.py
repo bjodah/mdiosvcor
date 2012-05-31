@@ -60,7 +60,7 @@ q_I, R_I, N_W, gamma_prime = symbols('q_I, R_I, N_W, gamma_prime')
 # Dependent parameters
 # Computational box length as CALCULATED in Eq.37
 # from density and number of water molecules
-L=(N_W*M_W/N_A/rho_prime+4*pi/3*R_I**3)**sympify(1/3)
+L=(N_W*M_W/N_A/rho_prime+4*pi/3*R_I**3)**(sympify(1)/3)
 
 # Correction terms appropriate for Lattice summation
 # Eq. 36 p. 17 in submitted manuscript
