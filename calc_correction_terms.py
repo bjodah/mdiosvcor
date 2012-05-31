@@ -110,7 +110,7 @@ def calc_all_for_project():
 	       [273.15, 285.65, 298.15, 310.65, 323.15],
 	       [1024, 724, 512], ['sod','cls'],COR_TYPES,
 	       dump_to_file="ignore_all_cor_prj_T")
-    batch_calc(['V'], [1e5, 1e5*5e3, 1e5*10e3],
+    batch_calc(['G','V'], [1e5, 1e5*5e3, 1e5*10e3],
 	       [298.15],
 	       [1024, 724, 512], ['sod','cls'],COR_TYPES,
 	       dump_to_file="ignore_all_cor_prj_P")
