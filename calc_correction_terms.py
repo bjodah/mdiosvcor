@@ -109,11 +109,11 @@ def calc_all_for_project():
 	       [298.15],
 	       [1024, 724, 512], ['sod','cls'],COR_TYPES,
 	       dump_to_file="ignore_all_cor_prj_std")
-    batch_calc(Y_TYPES, [1e5],
+    batch_calc(['G','H','V'], [1e5],
 	       [273.15, 285.65, 298.15, 310.65, 323.15],
-	       [1024, 724, 512], ['sod','cls'],['G','H','V'],
+	       [1024, 724, 512], ['sod','cls'],COR_TYPES,
 	       dump_to_file="ignore_all_cor_prj_T")
-    batch_calc(Y_TYPES, [1e5, 1e5*5e3, 1e5*10e3],
+    batch_calc(['V'], [1e5, 1e5*5e3, 1e5*10e3],
 	       [298.15],
-	       [1024, 724, 512], ['sod','cls'],['V'],
+	       [1024, 724, 512], ['sod','cls'],COR_TYPES,
 	       dump_to_file="ignore_all_cor_prj_P")
