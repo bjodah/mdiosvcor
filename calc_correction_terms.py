@@ -36,7 +36,7 @@ else:
 os.environ['MEMOIZE_CACHE_DIR'] = os.path.join(absdirname,'cache/')
 
 from mdiosvcor.manuscript_equations import get_Delta_Y_cor_LS, COR_TYPES, Y_TYPES, Y_UNITS, Y_UNITS_STR, IONS, ION_NAMES
-from mdiosvcor.prj_helpers import get_unitless
+#from mdiosvcor.prj_helpers import get_unitless
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, epilog="Abbrevations: "+\
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     try:
 	for key in COR_TYPES:
 	    fmtstr = "{0: >2}: {1} {2}"
-	    print fmtstr.format(key, str(get_unitless(result[key]/ Y_UNITS[Y])),
+	    print fmtstr.format(key, str(result[key] / Y_UNITS[Y]),
 				Y_UNITS_STR[Y])
     except:
 	raise
@@ -86,7 +86,7 @@ def batch_calc(Ys, Ps, Ts, NWs, Is, cors, verbose=False, dump_to_file=None):
 	result[conditions] = get_Delta_Y_cor_LS(*(conditions+(verbose,)))
 	Y   = conditions[0]
 	cor = conditions[5]
-	unitless_val = get_unitless(result[conditions][cor]/Y_UNITS[Y])
+	unitless_val = result[conditions][cor]/Y_UNITS[Y]
 	str_unit = Y_UNITS_STR[Y]
 	print fmtstr.format(*(conditions+(unitless_val, str_unit)))
 

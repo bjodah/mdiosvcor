@@ -177,7 +177,7 @@ def test_get_water_density():
     rho, drho = get_water_density(verbose=True)
     assert abs(get_unitless(rho) - 997.047625482) < 997/1e9
 
-#@adv_memoize()
+@adv_memoize()
 def get_water_density_derivatives(P_order, T_order,
 				  val_P=None, val_T=None, val_rho0=None,
 				  verbose = False,

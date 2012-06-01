@@ -60,7 +60,7 @@ q_I, R_I, N_W, gamma_prime = symbols('q_I, R_I, N_W, gamma_prime')
 # Dependent parameters
 # Computational box length as CALCULATED in Eq.37
 # from density and number of water molecules
-L=(N_W*M_W/N_A/rho_prime+4*pi/3*R_I**3)**(sympify(1)/3)
+L=(N_W*M_W/N_A/rho_prime+4*pi/3*R_I**3)**Rational(1,3)#(sympify(1)/3)
 
 # Correction terms appropriate for Lattice summation
 # Eq. 36 p. 17 in submitted manuscript
@@ -124,7 +124,7 @@ def test_get_rho_subs():
     print get_rho_subs(P0, Tdash)
 
 
-@adv_memoize()
+#@adv_memoize() ###
 def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=False):
     """
     Function which returns a correction term of type
@@ -173,8 +173,14 @@ def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=Fa
 	if verbose: print "Calculating cor_type: {}".format(cor_type)
 	subsd.update({P_: P_val, T_: T_val, N_W: N_W_val,
 		 q_I: q_I_val[ion], R_I: R_I_val[ion],
-		 gamma_prime: gamma_prime_val})
-	return {cor_type: Delta_Y_LS[Y][cor_type].subs(subsd).evalf().simplify()}
+		 gamma_prime: gamma_prime_val, pi: pi.evalf()})
+	# print subsd ###
+	# print 'A',Delta_Y_LS[Y][cor_type] ###
+	# return Delta_Y_LS[Y][cor_type].subs(subsd) ###
+	# print 'C',Delta_Y_LS[Y][cor_type].subs(subsd). ###
+	# print 'D',Delta_Y_LS[Y][cor_type].subs(subsd).evalf().simplify() ###
+	return {cor_type: Delta_Y_LS[Y][cor_type].subs(subsd)} #.evalf().simplify()}
+
 
 
 def test_get_Delta_Y_cor_LS(verbose=False):
