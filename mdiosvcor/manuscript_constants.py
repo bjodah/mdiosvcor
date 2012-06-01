@@ -35,7 +35,7 @@ gamma_prime_val	= 8.2e-3 * e * 1e-18 * units.meter**2
 f0,dfdP,dfdT,d2fdP2,d2fdPdT,d2fdT2 = \
     symbols('f0 dfdP dfdT d2fdP2 d2fdPdT d2fdT2')
 f_tay2 = f0 + dfdP*(P_-P0) + dfdT*(T_-Tdash) + \
-       sympify(1/2)*(d2fdP2*(P_-P0)**2+2*d2fdPdT*(P_-P0)*(T_-Tdash)+d2fdT2*(T_-Tdash)**2)
+       sympify(1)/2*(d2fdP2*(P_-P0)**2+2*d2fdPdT*(P_-P0)*(T_-Tdash)+d2fdT2*(T_-Tdash)**2)
 
 TayParams = namedtuple('TayParams', ['f0', 'dfdP', 'dfdT', 'd2fdP2', 'd2fdPdT', 'd2fdT2'])
 
@@ -68,12 +68,12 @@ chi_prime_params = TayParams(7.3e-1   * units.volt,
                              0        * units.volt / units.kelvin / units.kelvin)
 chi_prime = f_tay2.subs(chi_prime_params._asdict())
 
-chi_tilde_minus_prime_params = TayParams(-1.1e-10   * units.volt * units.meter,
-                             0        * units.volt * units.meter / units.bar,
-                            -6.72e-14 * units.volt * units.meter / units.kelvin,
-                             0        * units.volt * units.meter / units.bar / units.bar,
-                             0        * units.volt * units.meter / units.bar / units.kelvin,
-                             0        * units.volt * units.meter / units.kelvin / units.kelvin)
+chi_tilde_minus_prime_params = TayParams(-1.1e-10  * units.volt * units.meter,
+                                          0        * units.volt * units.meter / units.bar,
+                                         -6.72e-14 * units.volt * units.meter / units.kelvin,
+                                          0        * units.volt * units.meter / units.bar / units.bar,
+                                          0        * units.volt * units.meter / units.bar / units.kelvin,
+                                          0        * units.volt * units.meter / units.kelvin / units.kelvin)
 chi_tilde_minus_prime = f_tay2.subs(chi_tilde_minus_prime_params._asdict())
 
 
