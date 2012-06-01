@@ -124,7 +124,7 @@ def test_get_rho_subs():
     print get_rho_subs(P0, Tdash)
 
 
-#@adv_memoize() ###
+@adv_memoize() # If debugging remove memoization
 def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=False):
     """
     Function which returns a correction term of type
@@ -174,12 +174,7 @@ def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=Fa
 	subsd.update({P_: P_val, T_: T_val, N_W: N_W_val,
 		 q_I: q_I_val[ion], R_I: R_I_val[ion],
 		 gamma_prime: gamma_prime_val, pi: pi.evalf()})
-	# print subsd ###
-	# print 'A',Delta_Y_LS[Y][cor_type] ###
-	# return Delta_Y_LS[Y][cor_type].subs(subsd) ###
-	# print 'C',Delta_Y_LS[Y][cor_type].subs(subsd). ###
-	# print 'D',Delta_Y_LS[Y][cor_type].subs(subsd).evalf().simplify() ###
-	return {cor_type: Delta_Y_LS[Y][cor_type].subs(subsd)} #.evalf().simplify()}
+	return {cor_type: Delta_Y_LS[Y][cor_type].subs(subsd)}
 
 
 
