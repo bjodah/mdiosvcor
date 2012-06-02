@@ -101,6 +101,10 @@ def get_rho_subs(P_val, T_val, reltol=None, verbose=False,
     if verbose: print "Calculating water density P and T derivatives using IAPWS95..."
     P_order = 2 # We need up to second derivative wrt to P
     T_order = 2 # We need up to second derivative wrt to T
+
+    # Set arguments for get_water_density_derivatives
+    use_numexpr = False; use_finite_difference = False; ret_w_units = False
+
     skip_sigs = (((P_, 1), (T_, 2)),
 		 ((P_, 2), (T_, 2)),
 		 ((P_, 2), (T_, 1)))
@@ -109,7 +113,10 @@ def get_rho_subs(P_val, T_val, reltol=None, verbose=False,
 					     T_val, None,
 					     IAPWS95_verbose,
 					     reltol,
-					     skip_sigs=skip_sigs)
+					     use_numexpr,
+					     use_finite_difference,
+					     ret_w_units,
+					     skip_sigs)
 
     subs = {}
     for k, v in val.iteritems():
