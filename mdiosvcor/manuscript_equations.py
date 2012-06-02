@@ -103,7 +103,7 @@ def get_rho_subs(P_val, T_val, reltol=None, verbose=False,
     T_order = 2 # We need up to second derivative wrt to T
 
     # Set arguments for get_water_density_derivatives
-    use_numexpr = False; use_finite_difference = False; ret_w_units = False
+    use_numexpr = False; use_finite_difference = False; ret_w_units = True
 
     skip_sigs = (((P_, 1), (T_, 2)),
 		 ((P_, 2), (T_, 2)),
