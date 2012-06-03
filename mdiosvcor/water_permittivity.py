@@ -15,13 +15,7 @@ from manuscript_constants import P0, Tdash
 Permitivity of water according to
 the parametrization by Bradley and Pitzer
 
-         Bradley, D.J.
-         Pitzer, K.S.
-         Journal Name: J. Phys. Chem.; (United States); Journal Volume: 83:12
-         1979
-         J. Phys. Chem.; (United States); Journal Volume: 83:12
-         Pages: 1599-1603
-         Thermodynamics of electrolytes. 12. Dielectric properties of water and Debye--Hueckel parameters to 350/sup 0/C and 1 kbar
+         Bradley, D.J.; Pitzer, K.S. `Thermodynamics of electrolytes. 12. Dielectric properties of water and Debye--Hueckel parameters to 350/sup 0/C and 1 kbar`, J. Phys. Chem.; Journal Volume 83 (12) (1979), pp. 1599-1603
          http://pubs.acs.org/doi/abs/10.1021/j100475a009
          DOI: 10.1021/j100475a009
 
@@ -44,18 +38,3 @@ B  = U[7] + U[8]/T_ + U[9]*T_
 C  = U[4] + U[5]/(U[6]+T_)
 eps1000 = U[1]*exp(U[2]*T_+U[3]*T_**2)
 eps = eps1000 + C*ln((B+P_)/(B+1000.0*units.bar))
-
-def get_water_eps(P_val,T_val, expr=eps):
-    # If P is without unit, assume Pascal:
-    try:
-        float(P_val/units.pascal)
-    except:
-        P_val *= units.pascal
-
-    # If T is without unit, assume Kelvin:
-    try:
-        float(T_val/units.kelvin)
-    except:
-        T_val *= units.kelvin
-
-    return float(expr.subs({P_:P_val, T_:T_val}))

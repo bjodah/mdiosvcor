@@ -18,7 +18,7 @@ The code is entirely based on the publication:
 
 Latest version is available at github.com/bjodah/mdiosvcor
 
-Implemented for use in research project in the IGC group at ETH
+Implemented for use in a research project in the IGC group at ETH.
 
 See README.md and LICENSE.txt for further information
 """
@@ -30,6 +30,8 @@ os.environ['MEMOIZE_CACHE_DIR'] = os.path.join(absdirname,'cache/')
 from mdiosvcor.IAPWS95_density import (
     get_water_density_derivatives, P_, T_
     )
+
+from sympy import Derivative, symbols, Function
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
@@ -43,14 +45,17 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     argd = vars(args)
+
+    calc_prop = Derivative(symbols('rho',cls=Function),
+			   P_, argd['porder'], T_, argd['torder'])
+
     if argd['verbose']:
-	fstr = "Calculating for P={}, T={}, porder={}, toder={} with a relative tolerance of {}"
-	print fstr.format(*[argd[k] for k in ('pressure',
+	fstr = "Calculating {} (rho = water density) at P={}, T={}, with a relative tolerance of {}"
+	print fstr.format(calc_prop, *[argd[k] for k in ('pressure',
 					      'temperature',
-					      'porder',
-					      'torder',
 					      'reltol')])
 
+    use_numexpr = False; use_finite_difference = False
     val, err = get_water_density_derivatives(argd['porder'],
 					argd['torder'],
 					argd['pressure'],
@@ -58,9 +63,11 @@ if __name__ == '__main__':
 					None,
 					argd['verbose'],
 					argd['reltol'],
-					ret_w_units=argd['units'])
+					use_numexpr,
+					use_finite_difference,
+					argd['units'])
 
-    print "val:       {}".format(
+    print "{}: {}".format(calc_prop,
 	val[((P_,argd['porder']),(T_,argd['torder']))])
     print "trunc_err: {}".format(
-	err[((P_,argd['porder']),(T_,argd['torder']))])
+	abs(err[((P_,argd['porder']),(T_,argd['torder']))]))
