@@ -47,6 +47,10 @@ An example on how to run this kind of batch calculation for large number of diff
 
      python -c "import calc_correction_terms as cct; cct.batch_calc(['G','H'], [101.3e3], [273.15, 298.15, 323.15], [1024, 512], ['sod','cls'],['B','C1','C2','D'])"
 
+To generate correction terms corresponding to conditions used in the article one can (under Bash shell) execute:
+
+     MEMOIZE_CACHE_DIR=cache/ PYTHONPATH=$PYTHONPATH:/home/dahlbjo/sympy python -c "import calc_correction_terms as cct; cct.calc_all_for_project()" > all.txt
+
 ## Additional information
 Beyond the core equations used in calculating the correction terms specified in the article above,
 this project re-implements the [IAPWS95](http://iapws.org) formulation of thermodynamic properties
