@@ -22,7 +22,7 @@ from water_permittivity import eps
 from IAPWS95_density import get_water_density_derivatives, P_, T_
 from manuscript_constants import P_, T_, P0, Tdash, eps0, alpha_LS, \
      M_W, N_A, gamma_prime_val, chi_prime, chi_tilde_minus_prime, \
-     q_I_val, R_I_val, eps_prime_scaling_factor, \
+     q_I_val, R_I_expr_d, eps_prime_scaling_factor, \
      rho_prime_scaling_factor
 
 
@@ -53,26 +53,30 @@ ION_NAMES = {'sod': 'Na+', 'cls': 'Cl-'}
 # Epsilon' is scaled down version of real water:
 eps_prime = eps * eps_prime_scaling_factor
 
-rho_prime = symbols('rho_prime', cls=Function)(P_,T_)
+# P/T dependent parameters
+rho_prime_ = symbols('rho_prime', cls=Function)(P_,T_)
+R_I_ = symbols('R_I', cls=Function)(P_,T_)
 
-q_I, R_I, N_W, gamma_prime = symbols('q_I, R_I, N_W, gamma_prime')
+# Constants
+q_I, N_W, gamma_prime = symbols('q_I, N_W, gamma_prime')
+
 
 
 # Dependent parameters
 # Computational box length as CALCULATED in Eq.37
 # from density and number of water molecules
-L=(N_W*M_W/N_A/rho_prime+4*pi/3*R_I**3)**Rational(1,3)#(sympify(1)/3)
+L=(N_W*M_W/N_A/rho_prime_+4*pi/3*R_I_**3)**Rational(1,3)#(sympify(1)/3)
 
 # Correction terms appropriate for Lattice summation
 # Eq. 36 p. 17 in submitted manuscript
 Delta_G_LS = {'B': 1/(8*pi*eps0)*N_A*q_I**2* \
-	      (1-1/eps_prime)/L*(alpha_LS+4*pi/3*(R_I/L)**2 - \
-				 16*pi**2/45*(R_I/L)**5),
+	      (1-1/eps_prime)/L*(alpha_LS+4*pi/3*(R_I_/L)**2 - \
+				 16*pi**2/45*(R_I_/L)**5),
 	      'C1': -N_A/(6*eps0)*N_W*gamma_prime*q_I/L**3,
-	      'C2': -N_A*q_I*4*pi*R_I**3/3/L**3 * \
-			(chi_prime+chi_tilde_minus_prime/R_I),
+	      'C2': -N_A*q_I*4*pi*R_I_**3/3/L**3 * \
+			(chi_prime+chi_tilde_minus_prime/R_I_),
 	      'D':  1/(8*pi*eps0)*N_A*q_I**2 * \
-				(1/eps-1/eps_prime)/R_I
+				(1/eps-1/eps_prime)/R_I_
 	      }
 
 
@@ -120,9 +124,9 @@ def get_rho_subs(P_val, T_val, reltol=None, verbose=False,
 
     subs = {}
     for k, v in val.iteritems():
-	subs[Derivative(rho_prime, *reduce(add, k))] =v*rho_prime_scaling_factor
+	subs[Derivative(rho_prime_, *reduce(add, k))] =v*rho_prime_scaling_factor
 	if verbose:
-	    k = Derivative(rho_prime, *reduce(add, k))
+	    k = Derivative(rho_prime_, *reduce(add, k))
 	    print k,'=',subs[k]
     return subs
 
@@ -179,11 +183,33 @@ def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=Fa
 	return result
     else:
 	if verbose: print "Calculating cor_type: {}".format(cor_type)
-	subsd.update({N_W: N_W_val, q_I: q_I_val[ion], R_I: R_I_val[ion],
-		 gamma_prime: gamma_prime_val, pi: pi.evalf()})
-	result = Delta_Y_LS[Y][cor_type].subs(subsd).subs({P_: P_val, T_: T_val})
+	expr = Delta_Y_LS[Y][cor_type]
+	subsd.update(get_R_I_subs(2,2,ion))
+	subsd.update({N_W: N_W_val, q_I: q_I_val[ion],
+		      gamma_prime: gamma_prime_val,
+		      pi: pi.evalf()})
+	result = expr.subs(subsd).subs({P_: P_val, T_: T_val})
 	return {cor_type: result}
 
+
+def get_R_I_subs(porder, torder, ion):
+    subsd={}
+    for p in range(porder+1):
+	for t in range(torder+1):
+	    # If control structure
+	    # to handle flaw in diff:
+	    # flaw submited to:
+	    # https://github.com/sympy/sympy/issues/1327
+	    if p > 0 and t > 0:
+		df = diff(R_I_expr_d[ion], P_, p, T_, t)
+	    elif p == 0 and t > 0:
+		df = diff(R_I_expr_d[ion], T_, t)
+	    elif t == 0 and p > 0:
+		df = diff(R_I_expr_d[ion], P_, p)
+	    else: # both == 0
+		df = R_I_expr_d[ion]
+	    subsd[Derivative(R_I_, P_, p, T_, t)] = df
+    return subsd
 
 
 def test_get_Delta_Y_cor_LS(verbose=False):

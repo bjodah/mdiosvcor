@@ -86,6 +86,6 @@ chi_tilde_minus_prime = f_tay2.subs(chi_tilde_minus_prime_params._asdict())
 # Ion specific parameters
 q_I_val = {'sod':  1*e,
 	   'cls': -1*e}
-R_I_val = {'sod': R_I_sod, # Ionic radius for each ion
+R_I_expr_d = {'sod': R_I_sod, # Ionic radius for each ion
 	   'cls': R_I_cls} # mean value of Goldschmidt radius and
 
