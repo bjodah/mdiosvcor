@@ -163,8 +163,9 @@ def get_water_density(val_P=None, val_T=None, val_rho0=None,
     function is definied for accessing density at a given pressure
     and termperature
     """
-    rho_val, rho_err = get_water_density_derivatives(0, 0, val_T,
+    rho_val, rho_err = get_water_density_derivatives(0, 0,
 						     val_P,
+						     val_T,
 						     val_rho0,
 						     verbose, reltol,
 						     use_numexpr,

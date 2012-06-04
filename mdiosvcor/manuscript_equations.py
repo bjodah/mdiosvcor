@@ -22,7 +22,8 @@ from water_permittivity import eps
 from IAPWS95_density import get_water_density_derivatives, P_, T_
 from manuscript_constants import P_, T_, P0, Tdash, eps0, alpha_LS, \
      M_W, N_A, gamma_prime_val, chi_prime, chi_tilde_minus_prime, \
-     q_I_val, R_I_val
+     q_I_val, R_I_val, eps_prime_scaling_factor, \
+     rho_prime_scaling_factor
 
 
 # Global variables (only LS scheme implemented)
@@ -50,7 +51,7 @@ IONS = ('sod','cls')
 ION_NAMES = {'sod': 'Na+', 'cls': 'Cl-'}
 
 # Epsilon' is scaled down version of real water:
-eps_prime = eps * 66.6/eps.subs({P_:P0, T_:Tdash})
+eps_prime = eps * eps_prime_scaling_factor
 
 rho_prime = symbols('rho_prime', cls=Function)(P_,T_)
 
@@ -97,7 +98,6 @@ def get_rho_subs(P_val, T_val, reltol=None, verbose=False,
     be calculated numerically
     """
     if reltol == None: reltol = 1e-9
-    scaling_factor = 968.2/997.047625482 # See Table 3 on p. 43 in MS
     if verbose: print "Calculating water density P and T derivatives using IAPWS95..."
     P_order = 2 # We need up to second derivative wrt to P
     T_order = 2 # We need up to second derivative wrt to T
@@ -120,15 +120,13 @@ def get_rho_subs(P_val, T_val, reltol=None, verbose=False,
 
     subs = {}
     for k, v in val.iteritems():
-	subs[Derivative(rho_prime, *reduce(add, k))] =v*scaling_factor
+	subs[Derivative(rho_prime, *reduce(add, k))] =v*rho_prime_scaling_factor
 	if verbose:
 	    k = Derivative(rho_prime, *reduce(add, k))
 	    print k,'=',subs[k]
     return subs
 
 
-def test_get_rho_subs():
-    print get_rho_subs(P0, Tdash)
 
 
 @adv_memoize() # If debugging remove memoization
@@ -165,7 +163,10 @@ def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=Fa
 	# Assume Kelvin
 	T_val *= units.kelvin
 
-    subsd = get_rho_subs(P_val, T_val, None, verbose)
+    if not cor_type == 'D':
+	subsd = get_rho_subs(P_val, T_val, None, verbose)
+    else:
+	subsd = {}
     if cor_type == "all":
 	if verbose: print "Calculating all correction term types ("+\
 	   ", ".join(COR_TYPES)+")"
@@ -178,10 +179,10 @@ def get_Delta_Y_cor_LS(Y, P_val, T_val, N_W_val, ion, cor_type="all", verbose=Fa
 	return result
     else:
 	if verbose: print "Calculating cor_type: {}".format(cor_type)
-	subsd.update({P_: P_val, T_: T_val, N_W: N_W_val,
-		 q_I: q_I_val[ion], R_I: R_I_val[ion],
+	subsd.update({N_W: N_W_val, q_I: q_I_val[ion], R_I: R_I_val[ion],
 		 gamma_prime: gamma_prime_val, pi: pi.evalf()})
-	return {cor_type: Delta_Y_LS[Y][cor_type].subs(subsd)}
+	result = Delta_Y_LS[Y][cor_type].subs(subsd).subs({P_: P_val, T_: T_val})
+	return {cor_type: result}
 
 
 

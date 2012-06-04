@@ -69,13 +69,15 @@ if __name__ == '__main__':
 				argd['verbose'])
 
     Y = argd['property']
-    try:
-	for key in COR_TYPES:
-	    fmtstr = "{0: >2}: {1} {2}"
-	    print fmtstr.format(key, str(result[key] / Y_UNITS[Y]),
-				Y_UNITS_STR[Y])
-    except:
-	raise
+    if argd['cortype'] == 'all':
+	loop_over = COR_TYPES
+    else:
+	loop_over = [argd['cortype']]
+    for key in loop_over:
+	fmtstr = "{0: >2}: {1} {2}"
+	print fmtstr.format(key, str(result[key] / Y_UNITS[Y]),
+			    Y_UNITS_STR[Y])
+
 
 
 def batch_calc(Ys, Ps, Ts, NWs, Is, cors, verbose=False, dump_to_file=None):

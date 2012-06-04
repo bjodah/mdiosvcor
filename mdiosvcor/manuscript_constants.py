@@ -30,12 +30,16 @@ N_A		= 6.02214179e+23 / units.mole
 e = 1.602176487e-19 * units.coulomb
 gamma_prime_val	= 8.2e-3 * e * 1e-18 * units.meter**2
 
+eps_prime_scaling_factor = 66.6/78.384 # p. 46 in manuscript
+rho_prime_scaling_factor = 968.2/997.05 #47625482 Table 3 p. 43 in MS
 
 # Taylor expansion of P and T dependent function to second order
 f0,dfdP,dfdT,d2fdP2,d2fdPdT,d2fdT2 = \
     symbols('f0 dfdP dfdT d2fdP2 d2fdPdT d2fdT2')
-f_tay2 = f0 + dfdP*(P_-P0) + dfdT*(T_-Tdash) + \
-       sympify(1)/2*(d2fdP2*(P_-P0)**2+2*d2fdPdT*(P_-P0)*(T_-Tdash)+d2fdT2*(T_-Tdash)**2)
+f_tay2 = f0 + dfdP*(P_ - P0) + dfdT*(T_ - Tdash) + \
+       sympify(1)/2*(d2fdP2*(P_ - P0)**2 + \
+		     2*d2fdPdT*(P_ - P0)*(T_ - Tdash) + \
+		     d2fdT2*(T_ - Tdash)**2)
 
 TayParams = namedtuple('TayParams', ['f0', 'dfdP', 'dfdT', 'd2fdP2', 'd2fdPdT', 'd2fdT2'])
 

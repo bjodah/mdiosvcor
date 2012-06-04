@@ -209,7 +209,7 @@ def adv_memoize(cache_name=None, cache_stdout=True, cache_dir_path=None, autoloa
     TODO: Make it more compatible with functools.lru_cache from Python 3.2+
     """
     if cache_dir_path == None:
-        cache_dir_path = os.environ.get('MEMOIZE_CACHE_DIR', '.')
+        cache_dir_path = os.environ.get('MEMOIZE_CACHE_DIR', None)
     def decorator(f):
         if cache_name == None:
             _cache_name = f.__name__
@@ -223,11 +223,13 @@ def adv_memoize(cache_name=None, cache_stdout=True, cache_dir_path=None, autoloa
                     'autodump'       : True}
 
         retval_cache = PickleDict()
-        retval_cache.set_cache_file(f.__name__+'_retval',**scf_kwargs)
+	if cache_dir_path != None:
+	    retval_cache.set_cache_file(f.__name__+'_retval',**scf_kwargs)
 
         if cache_stdout:
             output_cache = PickleDict()
-            output_cache.set_cache_file(f.__name__+'_output',**scf_kwargs)
+	    if cache_dir_path != None:
+		output_cache.set_cache_file(f.__name__+'_output',**scf_kwargs)
 
         @wraps(f)
         def wrapper(*args):
