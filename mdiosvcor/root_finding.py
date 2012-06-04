@@ -506,9 +506,10 @@ def get_cb_from_rel(rel, subs_fs, varied, cb_args=(),
 	    except ImportError:
 		if verbose: print "Autowrapping binary..."
 		cb = autowrap_and_store(subsrel,
-					  args=(dummy,)+cb_args,
-					  tempdir=store_dir,
-					  mod_name=mod_name)
+					args=(dummy,)+cb_args,
+					tempdir=store_dir,
+					verbose=verbose,
+					mod_name=mod_name)
 	    if added_path: sys.path.pop(sys.path.index(store_dir))
 	    return cb
 	else:

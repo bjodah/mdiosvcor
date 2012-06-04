@@ -26,19 +26,19 @@ def autowrap_and_store(expr, language='F95', backend='f2py', tempdir=None, args=
 	    #BEGIN SUBMOD
 	    if not os.path.exists(self.filename+'.'+\
 				  self.generator.code_extension):
-		print "Writing source code to: "+self.filename+'.'+\
+		if verbose: print "Writing source code to: "+self.filename+'.'+\
 				  self.generator.code_extension
 		self._generate_code(routine, helpers)
 		self._prepare_files(routine)
 	    else:
-		print "Using previously created source file: "+\
+		if verbose: print "Using previously created source file: "+\
 		      self.filename+'.'+self.generator.code_extension
             # self._generate_code(routine, helpers)
             # self._prepare_files(routine)
 	    #END SUBMOD
-	    print "Compiling binary..."
+	    if verbose: print "Compiling binary..."
             self._process_files(routine)
-	    print "Compilation completed."
+	    if verbose: print "Compilation completed."
             mod = __import__(self.module_name)
         finally:
             sys.path.remove(workdir)
