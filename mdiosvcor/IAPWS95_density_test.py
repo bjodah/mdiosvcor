@@ -14,8 +14,8 @@ import numpy as np
 #import numpy as np
 from sympy import *
 from IAPWS95_density import *
-from helpers import get_sympified
-
+from prj_helpers import get_sympified
+from IAPWS95_constants import ref_variables
 
 # From Table 6.6 p. 436 (50 in PDF)
 
@@ -37,6 +37,8 @@ phi__r_ref_500 = {
                  'd2fddeltadtau' :-0.112176915e1,
                  }
 
+val_T_c = ref_variables['T_c']
+val_rho_c = ref_variables['rho_c']
 state_500_subs = {tau_: val_T_c / (sympify(500.0) * units.kelvin),
                   delta_: sympify(838.025) * units.kg / units.meter**3\
 		         / val_rho_c

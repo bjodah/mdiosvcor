@@ -287,20 +287,24 @@ def get_water_density_derivatives(P_order, T_order,
 
     return val, err
 
-def test_get_water_density_derivatives(verbose=True, use_numexpr=False):
+def test_get_water_density_derivatives(verbose=True, use_numexpr=False,
+				       use_finite_difference = False):
 
     skip_sigs = (((P_, 1), (T_, 2)),
 		 ((P_, 2), (T_, 2)),
 		 ((P_, 2), (T_, 1)))
+    ret_w_units = True
 
     drho, drho_err = get_water_density_derivatives(2,2,
 						   None,
 						   None,
 						   None,
-						   verbose=verbose,
-						   reltol=1e-9,
-						   use_numexpr=use_numexpr,
-						   skip_sigs=skip_sigs)
+						   verbose,
+						   1e-9,
+						   use_numexpr,
+						   use_finite_difference,
+						   ret_w_units,
+						   skip_sigs)
 
 
     estimates={

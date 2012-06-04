@@ -56,7 +56,7 @@ def find_root(func,
         if not dx0:
             # If no dx0 specified take an arbitrary step forward
 	    if x0 != 0:
-		dx0 = x0*1e-1
+		dx0 = x0*1e-2
 	    else:
 		dx0 = 1e-7*xunit
             if verbose: print "Assuming dx0 = {0}".format(dx0)
