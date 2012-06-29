@@ -5,15 +5,22 @@ For installation instructions see below
 
 The program is used for calculating the correction terms applied in the publication:
 
-   *Björn Dahlgren, Maria M. Reif, Philippe H. Hünenberger & Niels Hansen
+   Björn Dahlgren, Maria M. Reif, Philippe H. Hünenberger & Niels Hansen
    "Calculation of derivative thermodynamic hydration and aqueous partial
-   molar properties of ions based on atomistic simulations"
-   J. Chem. Theory Comput.*
+   molar properties of ions based on atomistic simulations",
+   *J. Chem. Theory Comput.*, Just Accepted Manuscript
+   DOI: 10.1021/ct300260q
+   Publication Date (Web): June 17, 2012
 
 The program was implemented for use in a research project in the IGC group at ETH Zürich.
+Unfortunately this program which uses the very useful sympy project is a late rewrite, i.e. the
+numbers presented in the paper are the same but they were calculated using non analytical derivatives,
+for this reason and that this version was finished after having submitted the manuscript means that SymPy
+is not cited in this work. Any future developments in this area (which will use this codebase) will naturally
+contain the proper citations.
 The theory behind the correction terms were developed by several persons in the IGC group (see references in the article above)
 
-If you make use the code in your own research, please cite the article referenced above.
+If you make use the code in your own research, please cite the article referenced above and appropriate references therein.
 
 ## Installation
 This package is written in python, i.e. no compilation is required.
